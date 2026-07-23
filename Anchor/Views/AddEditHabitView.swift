@@ -47,7 +47,9 @@ struct AddEditHabitView: View {
                             prayerService: PrayerService(calculationMethod: settingsService.calculationMethod, madhab: settingsService.madhab),
                             locationService: locationService
                         ),
-                        locationService: locationService
+                        locationService: locationService,
+                        completionService: CompletionService(context: modelContext),
+                        smartRemindersEnabled: settingsService.smartRemindersEnabled
                     )
                 }
             }

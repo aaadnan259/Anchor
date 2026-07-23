@@ -35,7 +35,13 @@ struct RootTabView: View {
         let habitService = HabitService(context: modelContext)
         let prayerService = PrayerService(calculationMethod: settingsService.calculationMethod, madhab: settingsService.madhab)
         let scheduleService = ScheduleService(prayerService: prayerService, locationService: locationService)
+        let completionService = CompletionService(context: modelContext)
         let notificationService = NotificationService()
-        await notificationService.rescheduleAll(for: habitService.fetchAll(), scheduleService: scheduleService)
+        await notificationService.rescheduleAll(
+            for: habitService.fetchAll(),
+            scheduleService: scheduleService,
+            completionService: completionService,
+            smartRemindersEnabled: settingsService.smartRemindersEnabled
+        )
     }
 }

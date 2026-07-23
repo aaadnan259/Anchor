@@ -49,7 +49,9 @@ struct HabitsView: View {
                         scheduleService: ScheduleService(
                             prayerService: PrayerService(calculationMethod: settingsService.calculationMethod, madhab: settingsService.madhab),
                             locationService: locationService
-                        )
+                        ),
+                        completionService: completionService,
+                        smartRemindersEnabled: settingsService.smartRemindersEnabled
                     )
                 }
             }

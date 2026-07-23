@@ -7,17 +7,23 @@ final class HabitsViewModel {
     private let streakService: StreakService
     private let notificationService: NotificationService
     private let scheduleService: ScheduleService
+    private let completionService: CompletionService
+    private let smartRemindersEnabled: Bool
 
     init(
         habitService: HabitService,
         streakService: StreakService,
         notificationService: NotificationService,
-        scheduleService: ScheduleService
+        scheduleService: ScheduleService,
+        completionService: CompletionService,
+        smartRemindersEnabled: Bool
     ) {
         self.habitService = habitService
         self.streakService = streakService
         self.notificationService = notificationService
         self.scheduleService = scheduleService
+        self.completionService = completionService
+        self.smartRemindersEnabled = smartRemindersEnabled
     }
 
     func streak(for habit: Habit) -> Int {
@@ -46,7 +52,12 @@ final class HabitsViewModel {
     private func rescheduleNotifications() {
         let habits = habitService.fetchAll()
         Task {
-            await notificationService.rescheduleAll(for: habits, scheduleService: scheduleService)
+            await notificationService.rescheduleAll(
+                for: habits,
+                scheduleService: scheduleService,
+                completionService: completionService,
+                smartRemindersEnabled: smartRemindersEnabled
+            )
         }
     }
 

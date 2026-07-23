@@ -127,6 +127,20 @@ struct SettingsView: View {
                 }
                 .padding(Spacing.base)
 
+                Divider().padding(.horizontal, Spacing.base)
+
+                Toggle("Smart Reminders", isOn: Bindable(settingsService).smartRemindersEnabled)
+                    .font(.anchorBody)
+                    .padding(Spacing.base)
+                    .onChange(of: settingsService.smartRemindersEnabled) { _, isEnabled in
+                        guard isEnabled else { return }
+                        Task {
+                            let service = NotificationService()
+                            await service.requestAuthorizationIfNeeded()
+                            notificationStatus = await service.authorizationStatus()
+                        }
+                    }
+
                 if notificationStatus == .denied {
                     Divider().padding(.horizontal, Spacing.base)
                     Button {
@@ -150,6 +164,11 @@ struct SettingsView: View {
                     .stroke(Surface.border, lineWidth: 1)
             )
             .padding(.horizontal, Spacing.base)
+
+            Text("Get a reminder around 8:00 PM for any habit you haven't completed yet today.")
+                .font(.anchorFootnote)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, Spacing.base)
         }
     }
 

@@ -29,6 +29,10 @@ final class SettingsService {
         didSet { defaults.set(biometricLockEnabled, forKey: Keys.biometricLockEnabled) }
     }
 
+    var smartRemindersEnabled: Bool {
+        didSet { defaults.set(smartRemindersEnabled, forKey: Keys.smartRemindersEnabled) }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         calculationMethod = PrayerCalculationMethod(rawValue: defaults.string(forKey: Keys.calculationMethod) ?? "") ?? .muslimWorldLeague
@@ -37,6 +41,7 @@ final class SettingsService {
         hasCompletedOnboarding = defaults.bool(forKey: Keys.hasCompletedOnboarding)
         accentColor = AccentColor(rawValue: defaults.string(forKey: Keys.accentColor) ?? "") ?? .indigo
         biometricLockEnabled = defaults.bool(forKey: Keys.biometricLockEnabled)
+        smartRemindersEnabled = defaults.bool(forKey: Keys.smartRemindersEnabled)
     }
 
     private enum Keys {
@@ -46,5 +51,6 @@ final class SettingsService {
         static let hasCompletedOnboarding = "settings.hasCompletedOnboarding"
         static let accentColor = "settings.accentColor"
         static let biometricLockEnabled = "settings.biometricLockEnabled"
+        static let smartRemindersEnabled = "settings.smartRemindersEnabled"
     }
 }

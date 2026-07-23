@@ -38,6 +38,8 @@ final class AddEditHabitViewModel {
     private let notificationService: NotificationService
     private let scheduleService: ScheduleService
     private let locationService: LocationService
+    private let completionService: CompletionService
+    private let smartRemindersEnabled: Bool
 
     var isEditing: Bool { existingHabit != nil }
     var isSaveDisabled: Bool { name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -48,7 +50,9 @@ final class AddEditHabitViewModel {
         nextDisplayOrder: Int,
         notificationService: NotificationService,
         scheduleService: ScheduleService,
-        locationService: LocationService
+        locationService: LocationService,
+        completionService: CompletionService,
+        smartRemindersEnabled: Bool
     ) {
         self.habitService = habitService
         self.existingHabit = habit
@@ -56,6 +60,8 @@ final class AddEditHabitViewModel {
         self.notificationService = notificationService
         self.scheduleService = scheduleService
         self.locationService = locationService
+        self.completionService = completionService
+        self.smartRemindersEnabled = smartRemindersEnabled
         if let habit {
             load(from: habit)
         }
@@ -119,7 +125,12 @@ final class AddEditHabitViewModel {
             if wantsPrayerTimes {
                 locationService.requestAuthorizationIfNeeded()
             }
-            await notificationService.rescheduleAll(for: habits, scheduleService: scheduleService)
+            await notificationService.rescheduleAll(
+                for: habits,
+                scheduleService: scheduleService,
+                completionService: completionService,
+                smartRemindersEnabled: smartRemindersEnabled
+            )
         }
     }
 
