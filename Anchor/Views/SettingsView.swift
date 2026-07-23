@@ -1,11 +1,15 @@
 import SwiftUI
+import SwiftData
 import UIKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @Environment(SettingsService.self) private var settingsService
 
     @State private var notificationStatus: NotificationAuthorization = .notDetermined
+    @State private var csvExportURL: URL?
+    @State private var jsonExportURL: URL?
 
     var body: some View {
         NavigationStack {
@@ -14,6 +18,7 @@ struct SettingsView: View {
                     prayerTimesSection
                     appearanceSection
                     notificationsSection
+                    dataSection
                     aboutSection
                 }
                 .padding(.vertical, Spacing.base)
@@ -28,6 +33,10 @@ struct SettingsView: View {
             }
             .task {
                 notificationStatus = await NotificationService().authorizationStatus()
+                let habits = HabitService(context: modelContext).fetchAll()
+                let exportService = ExportService()
+                csvExportURL = exportService.csvFileURL(habits: habits)
+                jsonExportURL = exportService.jsonFileURL(habits: habits)
             }
         }
         .preferredColorScheme(settingsService.appearance.colorScheme)
@@ -135,6 +144,56 @@ struct SettingsView: View {
             )
             .padding(.horizontal, Spacing.base)
         }
+    }
+
+    private var dataSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            SectionHeaderView(title: "Data")
+            VStack(spacing: 0) {
+                if let csvExportURL {
+                    ShareLink(item: csvExportURL) {
+                        exportRow(title: "Export as CSV")
+                    }
+                }
+
+                if csvExportURL != nil && jsonExportURL != nil {
+                    Divider().padding(.horizontal, Spacing.base)
+                }
+
+                if let jsonExportURL {
+                    ShareLink(item: jsonExportURL) {
+                        exportRow(title: "Export as JSON")
+                    }
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .fill(Surface.card)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .stroke(Surface.border, lineWidth: 1)
+            )
+            .padding(.horizontal, Spacing.base)
+
+            Text("Exports your full habit and completion history.")
+                .font(.anchorFootnote)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, Spacing.base)
+        }
+    }
+
+    private func exportRow(title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.anchorBody)
+                .foregroundStyle(.primary)
+            Spacer()
+            Image(systemName: "square.and.arrow.up")
+                .foregroundStyle(.secondary)
+        }
+        .padding(Spacing.base)
+        .contentShape(Rectangle())
     }
 
     private var aboutSection: some View {

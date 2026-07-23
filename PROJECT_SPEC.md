@@ -161,6 +161,7 @@ Reached via gear icon on Today.
 - Prayer Asr calculation (Shafi/Hanafi madhab)
 - Appearance override (System/Light/Dark), applies instantly app-wide including the Settings sheet itself
 - Notification authorization status (read-only) with a deep link to system settings when denied
+- Data export as CSV (flat, one row per completion) or JSON (per-habit, nested completions), including archived habits, via the system share sheet
 - App version/build (about)
 
 Persisted via UserDefaults (SettingsService), not SwiftData — these are scalar app-wide preferences, not relational business data.
@@ -297,6 +298,5 @@ Raised after the v1 visual redesign discussion. Not yet assigned to a version �
 - **Cross-habit correlation insights** — e.g. does completing habit A predict completing habit B
 - **Additional chart types** — line trends, radial completion charts (dot-matrix heatmap already shipped in v1)
 - **Streak shields** — configurable "skip days" (vacation/illness) that don't reset a streak to zero
-- **Data export** — CSV/JSON export of raw completion history
 
 Note: pausing a habit without losing its history already exists in v1 (Archive/Unarchive).

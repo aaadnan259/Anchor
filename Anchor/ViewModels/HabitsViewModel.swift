@@ -51,18 +51,6 @@ final class HabitsViewModel {
     }
 
     func frequencyDescription(for habit: Habit) -> String {
-        switch habit.frequency {
-        case .daily:
-            return "Every day"
-        case .weekdays(let days):
-            let daySet = Set(days)
-            let weekdaySet: Set<Weekday> = [.monday, .tuesday, .wednesday, .thursday, .friday]
-            if daySet == weekdaySet {
-                return "Weekdays"
-            }
-            return days.sorted().map(\.shortLabel).joined(separator: ", ")
-        case .timesPerWeek(let target):
-            return "\(target)x per week"
-        }
+        habit.frequency.displayName
     }
 }
