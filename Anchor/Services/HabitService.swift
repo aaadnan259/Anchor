@@ -77,43 +77,30 @@ struct HabitService {
         try? context.save()
     }
 
-    func seedStarterHabitsIfNeeded(existingHabits: [Habit]) {
-        guard existingHabits.isEmpty else { return }
+    func create(from preset: HabitPreset, displayOrder: Int) -> Habit {
+        create(
+            name: preset.name,
+            icon: preset.icon,
+            accentColor: preset.accentColor,
+            frequency: preset.frequency,
+            occurrences: occurrences(for: preset),
+            reminderEnabled: preset.reminderEnabled,
+            displayOrder: displayOrder
+        )
+    }
 
-        _ = create(
-            name: "Prayer",
-            icon: "moon.stars.fill",
-            accentColor: .violet,
-            frequency: .daily,
-            occurrences: [
+    private func occurrences(for preset: HabitPreset) -> [(title: String, scheduleProvider: ScheduleProviderKind)] {
+        switch preset.occurrenceMode {
+        case .prayer:
+            [
                 ("Fajr", .prayer(.fajr)),
                 ("Dhuhr", .prayer(.dhuhr)),
                 ("Asr", .prayer(.asr)),
                 ("Maghrib", .prayer(.maghrib)),
                 ("Isha", .prayer(.isha))
-            ],
-            reminderEnabled: true,
-            displayOrder: 0
-        )
-
-        _ = create(
-            name: "Gym",
-            icon: "dumbbell.fill",
-            accentColor: .coral,
-            frequency: .timesPerWeek(target: 5),
-            occurrences: [("Gym", .unscheduled)],
-            reminderEnabled: false,
-            displayOrder: 1
-        )
-
-        _ = create(
-            name: "Work",
-            icon: "briefcase.fill",
-            accentColor: .sky,
-            frequency: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday]),
-            occurrences: [("Work", .unscheduled)],
-            reminderEnabled: false,
-            displayOrder: 2
-        )
+            ]
+        case .single:
+            [(preset.name, .unscheduled)]
+        }
     }
 }

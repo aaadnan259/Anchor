@@ -34,9 +34,6 @@ struct TodayView: View {
             .background(Surface.background)
             .navigationBarHidden(true)
             .task {
-                let habitService = HabitService(context: modelContext)
-                habitService.seedStarterHabitsIfNeeded(existingHabits: habits)
-
                 if viewModel == nil {
                     viewModel = makeViewModel()
                 }

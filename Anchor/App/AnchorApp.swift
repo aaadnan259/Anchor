@@ -15,8 +15,11 @@ struct AnchorApp: App {
         WindowGroup {
             if Self.isRunningTests {
                 Color.clear
-            } else {
+            } else if settingsService.hasCompletedOnboarding {
                 RootTabView()
+                    .preferredColorScheme(settingsService.appearance.colorScheme)
+            } else {
+                OnboardingView()
                     .preferredColorScheme(settingsService.appearance.colorScheme)
             }
         }

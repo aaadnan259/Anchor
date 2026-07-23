@@ -104,6 +104,14 @@ Services are stateless where practical and injected into consumers.
 
 ## Screens
 
+### Onboarding
+Shown once, before Today/Habits/Stats, gated by `hasCompletedOnboarding`.
+- Welcome
+- Choose starter habits (Prayer/Gym/Work presets, multi-select, all preselected — can proceed with none)
+- Notification priming, shown only if a selected habit wants reminders — explains why before the system prompt fires
+- Location priming, shown only if a selected habit uses prayer scheduling — explains it's used only for prayer-time calculation, never stored or shared
+- Completing creates the chosen habits and hands off to Today
+
 ### Today
 - Date
 - Daily progress ring
@@ -282,7 +290,6 @@ Do not implement roadmap items in v1.
 
 Raised after the v1 visual redesign discussion. Not yet assigned to a version — prioritize deliberately, one at a time, rather than building speculatively.
 
-- **Onboarding flow** — first-run experience, proper permission priming before system prompts
 - **Smart reminders** — gentle nudge if a habit is still pending later in the day
 - **Quantifiable logging** — numeric habit values (e.g. ounces of water) instead of binary complete/incomplete
 - **Custom appearance/theme picker** — user-selectable accent theme beyond system light/dark

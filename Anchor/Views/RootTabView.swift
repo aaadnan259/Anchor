@@ -30,7 +30,6 @@ struct RootTabView: View {
     }
 
     private func refreshAndReschedule() async {
-        locationService.requestAuthorizationIfNeeded()
         await locationService.refreshLocation()
 
         let habitService = HabitService(context: modelContext)

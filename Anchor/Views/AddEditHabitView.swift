@@ -46,7 +46,8 @@ struct AddEditHabitView: View {
                         scheduleService: ScheduleService(
                             prayerService: PrayerService(calculationMethod: settingsService.calculationMethod, madhab: settingsService.madhab),
                             locationService: locationService
-                        )
+                        ),
+                        locationService: locationService
                     )
                 }
             }
