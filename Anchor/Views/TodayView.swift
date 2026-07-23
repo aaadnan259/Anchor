@@ -60,7 +60,7 @@ struct TodayView: View {
             Spacer()
             ProgressRingView(
                 progress: progress,
-                tint: AccentColor.indigo.color,
+                tint: settingsService.accentColor.color,
                 size: 56,
                 accessibilityLabelText: "Today's overall progress"
             )

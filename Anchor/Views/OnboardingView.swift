@@ -49,7 +49,7 @@ struct OnboardingView: View {
 
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 64, weight: .semibold))
-                .foregroundStyle(AccentColor.indigo.color)
+                .foregroundStyle(settingsService.accentColor.color)
 
             VStack(spacing: Spacing.sm) {
                 Text("Anchor")
@@ -63,7 +63,7 @@ struct OnboardingView: View {
             Spacer()
             Spacer()
 
-            PrimaryButtonView(title: "Get Started", tint: AccentColor.indigo.color) {
+            PrimaryButtonView(title: "Get Started", tint: settingsService.accentColor.color) {
                 viewModel.advance()
             }
         }
@@ -94,7 +94,7 @@ struct OnboardingView: View {
                 .padding(.bottom, Spacing.lg)
             }
 
-            PrimaryButtonView(title: "Continue", tint: AccentColor.indigo.color) {
+            PrimaryButtonView(title: "Continue", tint: settingsService.accentColor.color) {
                 viewModel.advance()
             }
             .padding(.horizontal, Spacing.lg)

@@ -21,12 +21,17 @@ final class SettingsService {
         didSet { defaults.set(hasCompletedOnboarding, forKey: Keys.hasCompletedOnboarding) }
     }
 
+    var accentColor: AccentColor {
+        didSet { defaults.set(accentColor.rawValue, forKey: Keys.accentColor) }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         calculationMethod = PrayerCalculationMethod(rawValue: defaults.string(forKey: Keys.calculationMethod) ?? "") ?? .muslimWorldLeague
         madhab = PrayerMadhab(rawValue: defaults.string(forKey: Keys.madhab) ?? "") ?? .shafi
         appearance = AppAppearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         hasCompletedOnboarding = defaults.bool(forKey: Keys.hasCompletedOnboarding)
+        accentColor = AccentColor(rawValue: defaults.string(forKey: Keys.accentColor) ?? "") ?? .indigo
     }
 
     private enum Keys {
@@ -34,5 +39,6 @@ final class SettingsService {
         static let madhab = "settings.madhab"
         static let appearance = "settings.appearance"
         static let hasCompletedOnboarding = "settings.hasCompletedOnboarding"
+        static let accentColor = "settings.accentColor"
     }
 }

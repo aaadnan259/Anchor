@@ -18,7 +18,7 @@ struct RootTabView: View {
             StatsView()
                 .tabItem { Label("Stats", systemImage: "chart.bar") }
         }
-        .tint(AccentColor.indigo.color)
+        .tint(settingsService.accentColor.color)
         .task {
             await refreshAndReschedule()
         }

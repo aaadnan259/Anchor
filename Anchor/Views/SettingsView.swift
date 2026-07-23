@@ -94,8 +94,9 @@ struct SettingsView: View {
     }
 
     private var appearanceSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
+        VStack(alignment: .leading, spacing: Spacing.base) {
             SectionHeaderView(title: "Appearance")
+
             Picker("Theme", selection: Bindable(settingsService).appearance) {
                 ForEach(AppAppearance.allCases) { appearance in
                     Text(appearance.displayName).tag(appearance)
@@ -103,6 +104,9 @@ struct SettingsView: View {
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, Spacing.base)
+
+            AccentColorPickerView(selection: Bindable(settingsService).accentColor)
+                .padding(.horizontal, Spacing.base)
         }
     }
 
