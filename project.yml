@@ -50,6 +50,7 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSLocationWhenInUseUsageDescription: "Anchor uses your location to calculate accurate prayer times for your Prayer habit. Location is never stored or shared."
+        NSFaceIDUsageDescription: "Anchor uses Face ID to keep your habit data private when App Lock is enabled."
 
   AnchorTests:
     type: bundle.unit-test

@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var notificationStatus: NotificationAuthorization = .notDetermined
     @State private var csvExportURL: URL?
     @State private var jsonExportURL: URL?
+    @State private var biometryKind: BiometryKind = .none
 
     var body: some View {
         NavigationStack {
@@ -18,6 +19,7 @@ struct SettingsView: View {
                     prayerTimesSection
                     appearanceSection
                     notificationsSection
+                    securitySection
                     dataSection
                     aboutSection
                 }
@@ -33,6 +35,7 @@ struct SettingsView: View {
             }
             .task {
                 notificationStatus = await NotificationService().authorizationStatus()
+                biometryKind = AuthenticationService().biometryKind()
                 let habits = HabitService(context: modelContext).fetchAll()
                 let exportService = ExportService()
                 csvExportURL = exportService.csvFileURL(habits: habits)
@@ -147,6 +150,35 @@ struct SettingsView: View {
                     .stroke(Surface.border, lineWidth: 1)
             )
             .padding(.horizontal, Spacing.base)
+        }
+    }
+
+    @ViewBuilder
+    private var securitySection: some View {
+        if biometryKind != .none {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                SectionHeaderView(title: "Security")
+                Toggle(biometricToggleLabel, isOn: Bindable(settingsService).biometricLockEnabled)
+                    .font(.anchorBody)
+                    .padding(Spacing.base)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                            .fill(Surface.card)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                            .stroke(Surface.border, lineWidth: 1)
+                    )
+                    .padding(.horizontal, Spacing.base)
+            }
+        }
+    }
+
+    private var biometricToggleLabel: String {
+        switch biometryKind {
+        case .faceID: "Require Face ID"
+        case .touchID: "Require Touch ID"
+        case .none: ""
         }
     }
 

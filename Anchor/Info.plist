@@ -18,6 +18,8 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Anchor uses Face ID to keep your habit data private when App Lock is enabled.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Anchor uses your location to calculate accurate prayer times for your Prayer habit. Location is never stored or shared.</string>
 	<key>UILaunchScreen</key>

@@ -162,6 +162,7 @@ Reached via gear icon on Today.
 - Appearance override (System/Light/Dark), applies instantly app-wide including the Settings sheet itself
 - App-wide accent color (8-color palette, reuses the same picker as per-habit colors), independent of individual habits' own colors
 - Notification authorization status (read-only) with a deep link to system settings when denied
+- App Lock (Face ID/Touch ID, with device-passcode fallback), toggle only shown when the device has usable biometry enrolled — re-locks on every background→foreground transition, gated after onboarding
 - Data export as CSV (flat, one row per completion) or JSON (per-habit, nested completions), including archived habits, via the system share sheet
 - App version/build (about)
 
@@ -294,7 +295,6 @@ Raised after the v1 visual redesign discussion. Not yet assigned to a version �
 
 - **Smart reminders** — gentle nudge if a habit is still pending later in the day
 - **Quantifiable logging** — numeric habit values (e.g. ounces of water) instead of binary complete/incomplete
-- **Biometric app lock** — Face ID/Touch ID to open the app
 - **Cross-habit correlation insights** — e.g. does completing habit A predict completing habit B
 - **Additional chart types** — line trends, radial completion charts (dot-matrix heatmap already shipped in v1)
 - **Streak shields** — configurable "skip days" (vacation/illness) that don't reset a streak to zero

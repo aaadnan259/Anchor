@@ -25,6 +25,10 @@ final class SettingsService {
         didSet { defaults.set(accentColor.rawValue, forKey: Keys.accentColor) }
     }
 
+    var biometricLockEnabled: Bool {
+        didSet { defaults.set(biometricLockEnabled, forKey: Keys.biometricLockEnabled) }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         calculationMethod = PrayerCalculationMethod(rawValue: defaults.string(forKey: Keys.calculationMethod) ?? "") ?? .muslimWorldLeague
@@ -32,6 +36,7 @@ final class SettingsService {
         appearance = AppAppearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         hasCompletedOnboarding = defaults.bool(forKey: Keys.hasCompletedOnboarding)
         accentColor = AccentColor(rawValue: defaults.string(forKey: Keys.accentColor) ?? "") ?? .indigo
+        biometricLockEnabled = defaults.bool(forKey: Keys.biometricLockEnabled)
     }
 
     private enum Keys {
@@ -40,5 +45,6 @@ final class SettingsService {
         static let appearance = "settings.appearance"
         static let hasCompletedOnboarding = "settings.hasCompletedOnboarding"
         static let accentColor = "settings.accentColor"
+        static let biometricLockEnabled = "settings.biometricLockEnabled"
     }
 }
