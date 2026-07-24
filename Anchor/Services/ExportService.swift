@@ -4,6 +4,7 @@ struct ExportedCompletion: Codable {
     let occurrence: String
     let day: String
     let completedAt: String
+    let value: Int
 }
 
 struct ExportedHabit: Codable {
@@ -16,14 +17,15 @@ struct ExportedHabit: Codable {
 
 struct ExportService {
     func csv(habits: [Habit]) -> String {
-        var lines = ["Habit,Occurrence,Day,Completed At"]
+        var lines = ["Habit,Occurrence,Day,Completed At,Value"]
         for habit in habits {
             for row in sortedCompletions(for: habit) {
                 lines.append([
                     csvField(habit.name),
                     csvField(row.occurrence.title),
                     csvField(dayFormatter.string(from: row.completion.day)),
-                    csvField(dateTimeFormatter.string(from: row.completion.completedAt))
+                    csvField(dateTimeFormatter.string(from: row.completion.completedAt)),
+                    csvField(String(row.completion.value))
                 ].joined(separator: ","))
             }
         }
@@ -41,7 +43,8 @@ struct ExportService {
                     ExportedCompletion(
                         occurrence: $0.occurrence.title,
                         day: dayFormatter.string(from: $0.completion.day),
-                        completedAt: dateTimeFormatter.string(from: $0.completion.completedAt)
+                        completedAt: dateTimeFormatter.string(from: $0.completion.completedAt),
+                        value: $0.completion.value
                     )
                 }
             )

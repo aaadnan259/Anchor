@@ -30,7 +30,16 @@ final class AddEditHabitViewModel {
     var timesPerWeekTarget: Int = 3
     var reminderEnabled: Bool = false
     var reminderTime: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: .now) ?? .now
-    var occurrenceMode: OccurrenceMode = .single
+    var occurrenceMode: OccurrenceMode = .single {
+        didSet {
+            if occurrenceMode == .prayer {
+                isQuantifiable = false
+            }
+        }
+    }
+    var isQuantifiable: Bool = false
+    var targetValue: Int = 8
+    var unitLabel: String = ""
 
     private let habitService: HabitService
     private let existingHabit: Habit?
@@ -85,6 +94,9 @@ final class AddEditHabitViewModel {
         timesPerWeekTarget = 3
         reminderEnabled = false
         occurrenceMode = .single
+        isQuantifiable = false
+        targetValue = 8
+        unitLabel = ""
     }
 
     func save() {
@@ -98,7 +110,9 @@ final class AddEditHabitViewModel {
                 icon: icon,
                 accentColor: accentColor,
                 frequency: frequency,
-                reminderEnabled: reminderEnabled
+                reminderEnabled: reminderEnabled,
+                targetValue: isQuantifiable ? targetValue : nil,
+                unit: isQuantifiable ? trimmedUnit : nil
             )
             if occurrenceMode == .single, let occurrence = existingHabit.occurrences.first {
                 habitService.updateOccurrence(occurrence, scheduleProvider: singleOccurrenceSchedule)
@@ -111,7 +125,9 @@ final class AddEditHabitViewModel {
                 frequency: frequency,
                 occurrences: occurrences(habitName: trimmedName),
                 reminderEnabled: reminderEnabled,
-                displayOrder: nextDisplayOrder
+                displayOrder: nextDisplayOrder,
+                targetValue: isQuantifiable ? targetValue : nil,
+                unit: isQuantifiable ? trimmedUnit : nil
             )
         }
 
@@ -149,6 +165,17 @@ final class AddEditHabitViewModel {
                 reminderTime = Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: .now) ?? .now
             }
         }
+
+        if let targetValue = habit.targetValue {
+            isQuantifiable = true
+            self.targetValue = targetValue
+            unitLabel = habit.unit ?? ""
+        }
+    }
+
+    private var trimmedUnit: String? {
+        let trimmed = unitLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     private func applyFrequency(_ frequency: Frequency) {

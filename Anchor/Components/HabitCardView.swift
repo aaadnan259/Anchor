@@ -12,8 +12,10 @@ struct HabitCardView: View {
     let progress: Double?
     var isExpandable: Bool = false
     var isExpanded: Bool = false
+    var isQuantifiable: Bool = false
     let onToggleCompletion: () -> Void
     var onTapExpand: (() -> Void)? = nil
+    var onTapLogValue: (() -> Void)? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: Spacing.md) {
@@ -80,6 +82,23 @@ struct HabitCardView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(isExpanded ? "Collapse" : "Expand")
+            } else if isQuantifiable {
+                Button {
+                    onTapLogValue?()
+                } label: {
+                    ProgressRingView(progress: progress ?? 0, lineWidth: 4, tint: tint, size: 28)
+                        .overlay {
+                            if isCompleted {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(tint)
+                            }
+                        }
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Log amount")
             } else {
                 CompletionToggleView(isCompleted: isCompleted, tint: tint, action: onToggleCompletion)
             }

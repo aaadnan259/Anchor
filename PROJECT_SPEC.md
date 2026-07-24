@@ -64,6 +64,8 @@ Habit
 - archived
 - createdAt
 - displayOrder
+- targetValue (optional) — numeric daily target for quantifiable habits, nil for binary habits
+- unit (optional) — display label for the target (e.g. "glasses"), nil for binary habits
 
 Occurrence
 - id
@@ -78,6 +80,7 @@ Completion
 - occurrenceId (optional)
 - day
 - completedAt
+- value — logged amount, defaults to 1 for binary habits; compared against the habit's targetValue for quantifiable habits
 
 ### Scheduling
 
@@ -118,6 +121,7 @@ Shown once, before Today/Habits/Stats, gated by `hasCompletedOnboarding`.
 - Due habits
 - Expandable occurrences
 - One-tap completion
+- Quantifiable habits show a fill ring instead of a checkmark; tapping opens a stepper sheet to log today's value
 - Smooth animations
 - Haptics
 
@@ -136,6 +140,7 @@ Fields:
 - Color
 - Frequency
 - Occurrences
+- Track a Number (Custom/single-occurrence habits only) — numeric daily target + unit label, logged via a stepper instead of a binary checkmark
 - Reminder toggle
 
 Preset cards:
@@ -296,7 +301,6 @@ Do not implement roadmap items in v1.
 
 Raised after the v1 visual redesign discussion. Not yet assigned to a version — prioritize deliberately, one at a time, rather than building speculatively.
 
-- **Quantifiable logging** — numeric habit values (e.g. ounces of water) instead of binary complete/incomplete
 - **Cross-habit correlation insights** — e.g. does completing habit A predict completing habit B
 - **Additional chart types** — radial completion charts (line trends and dot-matrix heatmap already shipped in v1)
 

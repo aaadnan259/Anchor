@@ -64,6 +64,22 @@ final class TodayViewModel {
         completionService.toggle(habit: habit, occurrence: occurrence, on: date)
     }
 
+    func value(for occurrence: Occurrence, on date: Date = .now) -> Int {
+        completionService.value(occurrence: occurrence, on: date)
+    }
+
+    func logValue(habit: Habit, occurrence: Occurrence, value: Int, on date: Date = .now) {
+        completionService.logValue(habit: habit, occurrence: occurrence, value: value, on: date)
+    }
+
+    /// Fill fraction for a quantifiable habit's ring (logged value / target), or nil if `row` isn't quantifiable.
+    func quantifiableProgress(for row: TodayHabitRow, on date: Date = .now) -> Double? {
+        guard let target = row.habit.targetValue, target > 0, let occurrence = row.due.first?.occurrence else {
+            return nil
+        }
+        return min(Double(value(for: occurrence, on: date)) / Double(target), 1.0)
+    }
+
     func toggleExpanded(_ habitID: UUID) {
         if expandedHabitIDs.contains(habitID) {
             expandedHabitIDs.remove(habitID)

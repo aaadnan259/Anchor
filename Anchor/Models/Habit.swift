@@ -11,6 +11,8 @@ final class Habit {
     var archived: Bool
     var createdAt: Date
     var displayOrder: Int
+    var targetValue: Int?
+    var unit: String?
 
     private var frequencyData: Data
 
@@ -37,7 +39,9 @@ final class Habit {
         reminderEnabled: Bool = false,
         archived: Bool = false,
         createdAt: Date = .now,
-        displayOrder: Int = 0
+        displayOrder: Int = 0,
+        targetValue: Int? = nil,
+        unit: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -48,5 +52,7 @@ final class Habit {
         self.archived = archived
         self.createdAt = createdAt
         self.displayOrder = displayOrder
+        self.targetValue = targetValue
+        self.unit = unit
     }
 }

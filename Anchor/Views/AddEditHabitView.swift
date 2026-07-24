@@ -79,6 +79,9 @@ struct AddEditHabitView: View {
                 }
 
                 frequencySection(viewModel: viewModel)
+                if viewModel.occurrenceMode == .single {
+                    quantifiableSection(viewModel: viewModel)
+                }
                 reminderSection(viewModel: viewModel)
             }
             .padding(.vertical, Spacing.base)
@@ -181,6 +184,43 @@ struct AddEditHabitView: View {
             }
         }
         .padding(.horizontal, Spacing.base)
+    }
+
+    private func quantifiableSection(viewModel: AddEditHabitViewModel) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            SectionHeaderView(title: "Tracking")
+            VStack(spacing: 0) {
+                Toggle("Track a Number", isOn: Bindable(viewModel).isQuantifiable)
+                    .font(.anchorBody)
+                    .padding(Spacing.base)
+
+                if viewModel.isQuantifiable {
+                    Divider().padding(.horizontal, Spacing.base)
+                    Stepper("Target: \(viewModel.targetValue)", value: Bindable(viewModel).targetValue, in: 1...999)
+                        .font(.anchorBody)
+                        .padding(Spacing.base)
+
+                    Divider().padding(.horizontal, Spacing.base)
+                    TextField("Unit (e.g. glasses)", text: Bindable(viewModel).unitLabel)
+                        .font(.anchorBody)
+                        .padding(Spacing.base)
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .fill(Surface.card)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
+                    .stroke(Surface.border, lineWidth: 1)
+            )
+            .padding(.horizontal, Spacing.base)
+
+            Text("Log a number each day instead of a simple checkmark, like glasses of water or pages read.")
+                .font(.anchorFootnote)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, Spacing.base)
+        }
     }
 
     private func reminderSection(viewModel: AddEditHabitViewModel) -> some View {

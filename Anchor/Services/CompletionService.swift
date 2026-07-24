@@ -8,7 +8,18 @@ struct CompletionService {
 
     func isCompleted(occurrence: Occurrence, on day: Date) -> Bool {
         let normalized = calendar.startOfDay(for: day)
-        return occurrence.completions.contains { calendar.isDate($0.day, inSameDayAs: normalized) }
+        guard let completion = occurrence.completions.first(where: { calendar.isDate($0.day, inSameDayAs: normalized) }) else {
+            return false
+        }
+        guard let target = occurrence.habit?.targetValue else {
+            return true
+        }
+        return completion.value >= target
+    }
+
+    func value(occurrence: Occurrence, on day: Date) -> Int {
+        let normalized = calendar.startOfDay(for: day)
+        return occurrence.completions.first(where: { calendar.isDate($0.day, inSameDayAs: normalized) })?.value ?? 0
     }
 
     func isFullyCompleted(habit: Habit, on day: Date) -> Bool {
@@ -33,6 +44,20 @@ struct CompletionService {
             context.delete(existing)
         } else {
             context.insert(Completion(habit: habit, occurrence: occurrence, day: normalized))
+        }
+        try? context.save()
+    }
+
+    func logValue(habit: Habit, occurrence: Occurrence, value: Int, on day: Date) {
+        let normalized = calendar.startOfDay(for: day)
+        if let existing = occurrence.completions.first(where: { calendar.isDate($0.day, inSameDayAs: normalized) }) {
+            if value <= 0 {
+                context.delete(existing)
+            } else {
+                existing.value = value
+            }
+        } else if value > 0 {
+            context.insert(Completion(habit: habit, occurrence: occurrence, day: normalized, value: value))
         }
         try? context.save()
     }

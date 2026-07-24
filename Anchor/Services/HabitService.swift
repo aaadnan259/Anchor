@@ -16,7 +16,9 @@ struct HabitService {
         frequency: Frequency,
         occurrences: [(title: String, scheduleProvider: ScheduleProviderKind)],
         reminderEnabled: Bool,
-        displayOrder: Int
+        displayOrder: Int,
+        targetValue: Int? = nil,
+        unit: String? = nil
     ) -> Habit {
         let habit = Habit(
             name: name,
@@ -24,7 +26,9 @@ struct HabitService {
             accentColor: accentColor,
             frequency: frequency,
             reminderEnabled: reminderEnabled,
-            displayOrder: displayOrder
+            displayOrder: displayOrder,
+            targetValue: targetValue,
+            unit: unit
         )
         habit.occurrences = occurrences.enumerated().map { index, item in
             Occurrence(title: item.title, displayOrder: index, scheduleProvider: item.scheduleProvider)
@@ -40,13 +44,17 @@ struct HabitService {
         icon: String,
         accentColor: AccentColor,
         frequency: Frequency,
-        reminderEnabled: Bool
+        reminderEnabled: Bool,
+        targetValue: Int?,
+        unit: String?
     ) {
         habit.name = name
         habit.icon = icon
         habit.accentColor = accentColor
         habit.frequency = frequency
         habit.reminderEnabled = reminderEnabled
+        habit.targetValue = targetValue
+        habit.unit = unit
         try? context.save()
     }
 
@@ -100,7 +108,9 @@ struct HabitService {
                 .sorted { $0.displayOrder < $1.displayOrder }
                 .map { ($0.title, $0.scheduleProvider) },
             reminderEnabled: habit.reminderEnabled,
-            displayOrder: fetchAll().count
+            displayOrder: fetchAll().count,
+            targetValue: habit.targetValue,
+            unit: habit.unit
         )
     }
 

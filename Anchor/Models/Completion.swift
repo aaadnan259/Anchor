@@ -6,6 +6,7 @@ final class Completion {
     var id: UUID
     var day: Date
     var completedAt: Date
+    var value: Int
 
     var habit: Habit?
     var occurrence: Occurrence?
@@ -15,12 +16,14 @@ final class Completion {
         habit: Habit,
         occurrence: Occurrence,
         day: Date,
-        completedAt: Date = .now
+        completedAt: Date = .now,
+        value: Int = 1
     ) {
         self.id = id
         self.habit = habit
         self.occurrence = occurrence
         self.day = day
         self.completedAt = completedAt
+        self.value = value
     }
 }

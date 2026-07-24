@@ -35,8 +35,8 @@ struct ExportServiceTests {
         let lines = csv.components(separatedBy: "\n")
 
         #expect(lines.count == 2)
-        #expect(lines[0] == "Habit,Occurrence,Day,Completed At")
-        #expect(lines[1] == "Prayer,Prayer,2026-07-20,2026-07-20T06:00:00Z")
+        #expect(lines[0] == "Habit,Occurrence,Day,Completed At,Value")
+        #expect(lines[1] == "Prayer,Prayer,2026-07-20,2026-07-20T06:00:00Z,1")
     }
 
     @Test("csv quotes and escapes a habit name containing a comma")
@@ -71,7 +71,7 @@ struct ExportServiceTests {
         let lines = csv.components(separatedBy: "\n")
 
         #expect(lines.count == 1)
-        #expect(lines[0] == "Habit,Occurrence,Day,Completed At")
+        #expect(lines[0] == "Habit,Occurrence,Day,Completed At,Value")
     }
 
     @Test("json round-trips through JSONDecoder with correct field values")
@@ -92,6 +92,26 @@ struct ExportServiceTests {
         #expect(decoded[0].completions[0].occurrence == "Prayer")
         #expect(decoded[0].completions[0].day == "2026-07-20")
         #expect(decoded[0].completions[0].completedAt == "2026-07-20T06:00:00Z")
+    }
+
+    @Test("csv and json include the logged value for a quantifiable habit's completion")
+    func exportsQuantifiableValue() throws {
+        let day = try date(2026, 7, 20)
+        let habit = Habit(
+            name: "Water", icon: "drop.fill", accentColor: .sky, frequency: .daily,
+            displayOrder: 0, targetValue: 8, unit: "glasses"
+        )
+        let occurrence = Occurrence(title: "Water", displayOrder: 0, scheduleProvider: .unscheduled)
+        habit.occurrences = [occurrence]
+        occurrence.completions = [Completion(habit: habit, occurrence: occurrence, day: day, completedAt: day, value: 6)]
+
+        let csv = ExportService().csv(habits: [habit])
+        let lines = csv.components(separatedBy: "\n")
+        #expect(lines[1] == "Water,Water,2026-07-20,2026-07-20T00:00:00Z,6")
+
+        let data = ExportService().json(habits: [habit])
+        let decoded = try JSONDecoder().decode([ExportedHabit].self, from: data)
+        #expect(decoded[0].completions[0].value == 6)
     }
 
     @Test("json includes archived habits")

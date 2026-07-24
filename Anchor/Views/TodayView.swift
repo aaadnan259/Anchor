@@ -9,8 +9,15 @@ struct TodayView: View {
 
     @State private var viewModel: TodayViewModel?
     @State private var isShowingSettings = false
+    @State private var loggingTarget: LoggingTarget?
 
     private let today = Date.now
+
+    private struct LoggingTarget: Identifiable {
+        let habit: Habit
+        let occurrence: Occurrence
+        var id: UUID { occurrence.id }
+    }
 
     var body: some View {
         NavigationStack {
@@ -42,6 +49,11 @@ struct TodayView: View {
             .onChange(of: settingsService.madhab) { viewModel = makeViewModel() }
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
+            }
+            .sheet(item: $loggingTarget) { target in
+                if let viewModel {
+                    LogValueView(habit: target.habit, occurrence: target.occurrence, viewModel: viewModel, date: today)
+                }
             }
         }
     }
@@ -83,6 +95,7 @@ struct TodayView: View {
 
             ForEach(rows) { row in
                 let isExpanded = viewModel.expandedHabitIDs.contains(row.habit.id)
+                let isQuantifiable = !row.isExpandable && row.habit.targetValue != nil
 
                 HabitCardView(
                     icon: row.habit.icon,
@@ -91,9 +104,10 @@ struct TodayView: View {
                     tint: row.habit.accentColor.color,
                     streak: row.streak,
                     isCompleted: row.isFullyCompleted,
-                    progress: row.isExpandable ? row.progress : nil,
+                    progress: row.isExpandable ? row.progress : (isQuantifiable ? viewModel.quantifiableProgress(for: row, on: today) : nil),
                     isExpandable: row.isExpandable,
                     isExpanded: isExpanded,
+                    isQuantifiable: isQuantifiable,
                     onToggleCompletion: {
                         if let only = row.due.first {
                             viewModel.toggle(habit: row.habit, occurrence: only.occurrence, on: today)
@@ -101,6 +115,11 @@ struct TodayView: View {
                     },
                     onTapExpand: {
                         viewModel.toggleExpanded(row.habit.id)
+                    },
+                    onTapLogValue: {
+                        if let occurrence = row.due.first?.occurrence {
+                            loggingTarget = LoggingTarget(habit: row.habit, occurrence: occurrence)
+                        }
                     }
                 )
 

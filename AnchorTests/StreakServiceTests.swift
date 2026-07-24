@@ -22,6 +22,16 @@ struct StreakServiceTests {
         return (habit, occurrence)
     }
 
+    private func makeQuantifiableHabit(target: Int, createdAt: Date) -> (Habit, Occurrence) {
+        let habit = Habit(
+            name: "Water", icon: "drop.fill", accentColor: .sky, frequency: .daily,
+            createdAt: createdAt, displayOrder: 0, targetValue: target, unit: "glasses"
+        )
+        let occurrence = Occurrence(title: "Water", displayOrder: 0, scheduleProvider: .unscheduled)
+        habit.occurrences = [occurrence]
+        return (habit, occurrence)
+    }
+
     private func makeDailyHabitWithTwoOccurrences(createdAt: Date) -> (Habit, Occurrence, Occurrence) {
         let habit = Habit(name: "Prayer", icon: "moon.stars.fill", accentColor: .violet, frequency: .daily, createdAt: createdAt, displayOrder: 0)
         let first = Occurrence(title: "Fajr", displayOrder: 0, scheduleProvider: .unscheduled)
@@ -32,8 +42,8 @@ struct StreakServiceTests {
 
     /// Wires a Completion directly into the in-memory relationship graph, bypassing
     /// CompletionService/ModelContext entirely — StreakService only ever reads this array.
-    private func complete(_ occurrence: Occurrence, habit: Habit, on day: Date) {
-        let completion = Completion(habit: habit, occurrence: occurrence, day: calendar.startOfDay(for: day))
+    private func complete(_ occurrence: Occurrence, habit: Habit, on day: Date, value: Int = 1) {
+        let completion = Completion(habit: habit, occurrence: occurrence, day: calendar.startOfDay(for: day), value: value)
         occurrence.completions.append(completion)
     }
 
@@ -307,5 +317,49 @@ struct StreakServiceTests {
         let history = streakService.dailyHistory(for: habit, days: 1, referenceDate: today)
 
         #expect(history == [.completed])
+    }
+
+    @Test("a quantifiable occurrence below target on a past due day is not completed and breaks the streak")
+    func quantifiableBelowTargetDoesNotComplete() throws {
+        let today = try date(2026, 7, 22)
+        let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: today))
+        let twoDaysAgo = try #require(calendar.date(byAdding: .day, value: -2, to: today))
+        let (habit, occurrence) = makeQuantifiableHabit(target: 8, createdAt: twoDaysAgo)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        complete(occurrence, habit: habit, on: twoDaysAgo, value: 8)
+        complete(occurrence, habit: habit, on: yesterday, value: 3)
+        complete(occurrence, habit: habit, on: today, value: 10)
+
+        // Yesterday's below-target log counts as a missed due day, breaking the chain
+        // back to two days ago — only today's own completion carries forward.
+        #expect(streakService.currentStreak(for: habit, referenceDate: today) == 1)
+    }
+
+    @Test("a quantifiable occurrence at or above target completes normally and builds a streak")
+    func quantifiableAtOrAboveTargetCompletes() throws {
+        let today = try date(2026, 7, 22)
+        let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: today))
+        let (habit, occurrence) = makeQuantifiableHabit(target: 8, createdAt: yesterday)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        complete(occurrence, habit: habit, on: yesterday, value: 8)
+        complete(occurrence, habit: habit, on: today, value: 10)
+
+        #expect(streakService.currentStreak(for: habit, referenceDate: today) == 2)
+    }
+
+    @Test("daily history transitions from missed to completed as a quantifiable day crosses target")
+    func dailyHistoryQuantifiableMissedToCompleted() throws {
+        let today = try date(2026, 7, 22)
+        let (belowHabit, belowOccurrence) = makeQuantifiableHabit(target: 8, createdAt: today)
+        let (atTargetHabit, atTargetOccurrence) = makeQuantifiableHabit(target: 8, createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        complete(belowOccurrence, habit: belowHabit, on: today, value: 5)
+        complete(atTargetOccurrence, habit: atTargetHabit, on: today, value: 8)
+
+        #expect(streakService.dailyHistory(for: belowHabit, days: 1, referenceDate: today) == [.missed])
+        #expect(streakService.dailyHistory(for: atTargetHabit, days: 1, referenceDate: today) == [.completed])
     }
 }
