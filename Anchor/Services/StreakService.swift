@@ -2,6 +2,7 @@ import Foundation
 
 enum DayCompletionState: Equatable {
     case completed
+    case shielded
     case partial
     case missed
     case notDue
@@ -93,7 +94,7 @@ struct StreakService {
     func dailyHistory(for habit: Habit, days: Int = 112, referenceDate: Date = .now) -> [DayCompletionState] {
         let today = calendar.startOfDay(for: referenceDate)
         let habitStart = calendar.startOfDay(for: habit.createdAt)
-        guard let rangeStart = calendar.date(byAdding: .day, value: -(days - 1), to: today) else { return [] }
+        let rangeStart = dailyHistoryStartDate(days: days, referenceDate: referenceDate)
 
         var history: [DayCompletionState] = []
         var day = rangeStart
@@ -102,10 +103,12 @@ struct StreakService {
                 history.append(.notDue)
             } else {
                 let completedCount = habit.occurrences.filter { completionService.isCompleted(occurrence: $0, on: day) }.count
-                if completedCount == 0 {
-                    history.append(.missed)
-                } else if completedCount == habit.occurrences.count {
+                if completedCount == habit.occurrences.count && completedCount > 0 {
                     history.append(.completed)
+                } else if completionService.isShielded(habit: habit, on: day) {
+                    history.append(.shielded)
+                } else if completedCount == 0 {
+                    history.append(.missed)
                 } else {
                     history.append(.partial)
                 }
@@ -114,6 +117,11 @@ struct StreakService {
             day = next
         }
         return history
+    }
+
+    func dailyHistoryStartDate(days: Int = 112, referenceDate: Date = .now) -> Date {
+        let today = calendar.startOfDay(for: referenceDate)
+        return calendar.date(byAdding: .day, value: -(days - 1), to: today) ?? today
     }
 
     private func isDue(habit: Habit, on date: Date) -> Bool {
@@ -152,6 +160,8 @@ struct StreakService {
             if isDue(habit: habit, on: day) {
                 if completionService.isFullyCompleted(habit: habit, on: day) {
                     streak += 1
+                } else if completionService.isShielded(habit: habit, on: day) {
+                    // Shielded day: doesn't count toward the streak, but doesn't break it either.
                 } else if isFirstDayChecked {
                     // Reference date is due but not finished yet; don't break the streak, just don't count it.
                 } else {
@@ -176,6 +186,8 @@ struct StreakService {
                 if completionService.isFullyCompleted(habit: habit, on: day) {
                     current += 1
                     best = max(best, current)
+                } else if completionService.isShielded(habit: habit, on: day) {
+                    // Shielded day: carry the current run forward unchanged.
                 } else {
                     current = 0
                 }

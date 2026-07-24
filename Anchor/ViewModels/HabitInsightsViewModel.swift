@@ -4,11 +4,15 @@ import Foundation
 @MainActor
 final class HabitInsightsViewModel {
     private let insightsService: InsightsService
+    private let streakService: StreakService
+    private let completionService: CompletionService
 
     var selectedRange: InsightsRange = .week
 
-    init(insightsService: InsightsService) {
+    init(insightsService: InsightsService, streakService: StreakService, completionService: CompletionService) {
         self.insightsService = insightsService
+        self.streakService = streakService
+        self.completionService = completionService
     }
 
     func trendPoints(for habit: Habit) -> [TrendPoint] {
@@ -17,5 +21,21 @@ final class HabitInsightsViewModel {
 
     func timeOfDaySlices(for habit: Habit) -> [TimeOfDaySlice] {
         insightsService.timeOfDayDistribution(for: habit)
+    }
+
+    func dailyHistory(for habit: Habit) -> [DayCompletionState] {
+        streakService.dailyHistory(for: habit)
+    }
+
+    func isShielded(habit: Habit, on day: Date) -> Bool {
+        completionService.isShielded(habit: habit, on: day)
+    }
+
+    func toggleShield(habit: Habit, on day: Date) {
+        completionService.toggleShield(habit: habit, on: day)
+    }
+
+    func shieldedDays(for habit: Habit) -> [Date] {
+        habit.shields.map(\.day).sorted(by: >)
     }
 }

@@ -25,6 +25,9 @@ final class Habit {
     @Relationship(deleteRule: .cascade, inverse: \Completion.habit)
     var completions: [Completion] = []
 
+    @Relationship(deleteRule: .cascade, inverse: \Shield.habit)
+    var shields: [Shield] = []
+
     init(
         id: UUID = UUID(),
         name: String,

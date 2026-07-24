@@ -89,6 +89,7 @@ struct HabitService {
         )
     }
 
+    @discardableResult
     func duplicate(_ habit: Habit) -> Habit {
         create(
             name: "\(habit.name) Copy",

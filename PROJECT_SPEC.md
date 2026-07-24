@@ -155,6 +155,7 @@ Preset cards:
 Pushed from a Stats card (tap).
 - Trend chart (line): completion rate over Week (last 12 weeks), Month (last 12 months), or Year (last 5 years) — segmented picker
 - Time-of-day pattern: completions bucketed into Night/Morning/Afternoon/Evening, with a "usually completed in the ___" summary
+- History: the same completion grid shown on Stats, plus (Daily/Weekdays habits only) a "Manage Shielded Days" sheet — mark a day as exempt via a date picker so it doesn't break a streak, for vacation/illness. Shielded days render as a distinct color in the grid and don't count toward or break current/best streak. Not available for weekly-target habits.
 
 ### Settings
 Reached via gear icon on Today.
@@ -297,7 +298,6 @@ Raised after the v1 visual redesign discussion. Not yet assigned to a version �
 
 - **Quantifiable logging** — numeric habit values (e.g. ounces of water) instead of binary complete/incomplete
 - **Cross-habit correlation insights** — e.g. does completing habit A predict completing habit B
-- **Additional chart types** — line trends, radial completion charts (dot-matrix heatmap already shipped in v1)
-- **Streak shields** — configurable "skip days" (vacation/illness) that don't reset a streak to zero
+- **Additional chart types** — radial completion charts (line trends and dot-matrix heatmap already shipped in v1)
 
 Note: pausing a habit without losing its history already exists in v1 (Archive/Unarchive).

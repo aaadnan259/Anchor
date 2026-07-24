@@ -37,6 +37,13 @@ struct StreakServiceTests {
         occurrence.completions.append(completion)
     }
 
+    /// Wires a Shield directly into the in-memory relationship graph, bypassing
+    /// CompletionService/ModelContext entirely — StreakService only ever reads this array.
+    private func shield(_ habit: Habit, on day: Date) {
+        let shield = Shield(habit: habit, day: calendar.startOfDay(for: day))
+        habit.shields.append(shield)
+    }
+
     @Test("current streak is zero with no completions")
     func zeroWithNoCompletions() throws {
         let today = try date(2026, 7, 22)
@@ -229,5 +236,76 @@ struct StreakServiceTests {
         let history = streakService.dailyHistory(for: habit, days: 2, referenceDate: today)
 
         #expect(history.first == .notDue)
+    }
+
+    @Test("a shielded day does not break the current streak")
+    func shieldedDayDoesNotBreakStreak() throws {
+        let start = try date(2026, 7, 20)
+        let (habit, occurrence) = makeDailyHabit(createdAt: start)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        let day2 = try #require(calendar.date(byAdding: .day, value: 1, to: start))
+        let day3 = try #require(calendar.date(byAdding: .day, value: 2, to: start))
+
+        complete(occurrence, habit: habit, on: start)
+        shield(habit, on: day2)
+        complete(occurrence, habit: habit, on: day3)
+
+        #expect(streakService.currentStreak(for: habit, referenceDate: day3) == 2)
+    }
+
+    @Test("a shielded day does not itself increment the streak")
+    func shieldedDayDoesNotIncrementStreak() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, _) = makeDailyHabit(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        shield(habit, on: today)
+
+        #expect(streakService.currentStreak(for: habit, referenceDate: today) == 0)
+    }
+
+    @Test("best streak carries forward unchanged across a shielded day")
+    func bestStreakCarriesForwardAcrossShieldedDay() throws {
+        let start = try date(2026, 7, 20)
+        let (habit, occurrence) = makeDailyHabit(createdAt: start)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        let day2 = try #require(calendar.date(byAdding: .day, value: 1, to: start))
+        let day3 = try #require(calendar.date(byAdding: .day, value: 2, to: start))
+
+        complete(occurrence, habit: habit, on: start)
+        shield(habit, on: day2)
+        complete(occurrence, habit: habit, on: day3)
+
+        #expect(streakService.bestStreak(for: habit, referenceDate: day3) == 2)
+    }
+
+    @Test("daily history reports shielded for a due, incomplete, shielded day")
+    func dailyHistoryReportsShielded() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, _, _) = makeDailyHabitWithTwoOccurrences(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        shield(habit, on: today)
+
+        let history = streakService.dailyHistory(for: habit, days: 1, referenceDate: today)
+
+        #expect(history == [.shielded])
+    }
+
+    @Test("daily history reports completed, not shielded, for a day that is both fully completed and shielded")
+    func dailyHistoryReportsCompletedOverShielded() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, first, second) = makeDailyHabitWithTwoOccurrences(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        complete(first, habit: habit, on: today)
+        complete(second, habit: habit, on: today)
+        shield(habit, on: today)
+
+        let history = streakService.dailyHistory(for: habit, days: 1, referenceDate: today)
+
+        #expect(history == [.completed])
     }
 }

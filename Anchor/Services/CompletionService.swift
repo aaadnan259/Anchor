@@ -36,4 +36,19 @@ struct CompletionService {
         }
         try? context.save()
     }
+
+    func isShielded(habit: Habit, on day: Date) -> Bool {
+        let normalized = calendar.startOfDay(for: day)
+        return habit.shields.contains { calendar.isDate($0.day, inSameDayAs: normalized) }
+    }
+
+    func toggleShield(habit: Habit, on day: Date) {
+        let normalized = calendar.startOfDay(for: day)
+        if let existing = habit.shields.first(where: { calendar.isDate($0.day, inSameDayAs: normalized) }) {
+            context.delete(existing)
+        } else {
+            context.insert(Shield(habit: habit, day: normalized))
+        }
+        try? context.save()
+    }
 }

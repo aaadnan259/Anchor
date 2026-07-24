@@ -55,7 +55,7 @@ struct AnchorApp: App {
     }
 
     private static func makeInMemoryContainer() -> ModelContainer {
-        let schema = Schema([Habit.self, Occurrence.self, Completion.self])
+        let schema = Schema([Habit.self, Occurrence.self, Completion.self, Shield.self])
         guard let container = try? ModelContainer(
             for: schema,
             configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)]
@@ -66,7 +66,7 @@ struct AnchorApp: App {
     }
 
     private static func makeContainer() -> ModelContainer {
-        let schema = Schema([Habit.self, Occurrence.self, Completion.self])
+        let schema = Schema([Habit.self, Occurrence.self, Completion.self, Shield.self])
 
         if let onDisk = try? ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema)]) {
             return onDisk

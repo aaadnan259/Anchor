@@ -6,6 +6,7 @@ struct HabitInsightsView: View {
     let habit: Habit
 
     @State private var viewModel: HabitInsightsViewModel?
+    @State private var isPresentingShieldSheet = false
 
     var body: some View {
         ScrollView {
@@ -15,6 +16,7 @@ struct HabitInsightsView: View {
                     let hasAnyCompletions = viewModel.timeOfDaySlices(for: habit).contains { $0.count > 0 }
                     trendSection(viewModel: viewModel, hasAnyCompletions: hasAnyCompletions)
                     timeOfDaySection(viewModel: viewModel, hasAnyCompletions: hasAnyCompletions)
+                    historySection(viewModel: viewModel)
                 }
             }
             .padding(.vertical, Spacing.base)
@@ -27,8 +29,15 @@ struct HabitInsightsView: View {
                 let completionService = CompletionService(context: modelContext)
                 let streakService = StreakService(completionService: completionService)
                 viewModel = HabitInsightsViewModel(
-                    insightsService: InsightsService(completionService: completionService, streakService: streakService)
+                    insightsService: InsightsService(completionService: completionService, streakService: streakService),
+                    streakService: streakService,
+                    completionService: completionService
                 )
+            }
+        }
+        .sheet(isPresented: $isPresentingShieldSheet) {
+            if let viewModel {
+                ManageShieldsView(habit: habit, viewModel: viewModel)
             }
         }
     }
@@ -123,6 +132,50 @@ struct HabitInsightsView: View {
                     .stroke(Surface.border, lineWidth: 1)
             )
             .padding(.horizontal, Spacing.base)
+        }
+    }
+
+    private func historySection(viewModel: HabitInsightsViewModel) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            SectionHeaderView(title: "History")
+
+            VStack(spacing: 0) {
+                HabitHistoryGridView(days: viewModel.dailyHistory(for: habit), tint: habit.accentColor.color)
+                    .padding(Spacing.base)
+
+                if habit.frequency.supportsShields {
+                    Divider().padding(.horizontal, Spacing.base)
+                    Button {
+                        isPresentingShieldSheet = true
+                    } label: {
+                        HStack {
+                            Text("Manage Shielded Days")
+                                .font(.anchorBody)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Image(systemName: "shield.fill")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(Spacing.base)
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
+                    .fill(Surface.card)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
+                    .stroke(Surface.border, lineWidth: 1)
+            )
+            .padding(.horizontal, Spacing.base)
+
+            if habit.frequency.supportsShields {
+                Text("Shield a day to protect your streak — for vacation, illness, or any day you can't complete this habit.")
+                    .font(.anchorFootnote)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, Spacing.base)
+            }
         }
     }
 }

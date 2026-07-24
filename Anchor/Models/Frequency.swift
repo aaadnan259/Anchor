@@ -20,4 +20,11 @@ enum Frequency: Codable, Equatable, Sendable {
             return "\(target)x per week"
         }
     }
+
+    var supportsShields: Bool {
+        switch self {
+        case .daily, .weekdays: true
+        case .timesPerWeek: false
+        }
+    }
 }

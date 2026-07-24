@@ -39,6 +39,7 @@ struct HabitHistoryGridView: View {
     private func color(for state: DayCompletionState) -> Color {
         switch state {
         case .completed: tint
+        case .shielded: Color.blue.opacity(0.6)
         case .partial: tint.opacity(0.45)
         case .missed: tint.opacity(0.15)
         case .notDue: Color.primary.opacity(0.08)
@@ -48,7 +49,7 @@ struct HabitHistoryGridView: View {
 
 #Preview {
     HabitHistoryGridView(
-        days: (0..<112).map { _ in [.completed, .completed, .partial, .missed, .notDue].randomElement() ?? .notDue },
+        days: (0..<112).map { _ in [.completed, .completed, .shielded, .partial, .missed, .notDue].randomElement() ?? .notDue },
         tint: AccentColor.violet.color
     )
     .padding()
