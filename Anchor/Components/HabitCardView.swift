@@ -93,6 +93,17 @@ struct HabitCardView: View {
             RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
                 .stroke(Surface.border, lineWidth: 1)
         )
+        .overlay(alignment: .top) {
+            UnevenRoundedRectangle(
+                topLeadingRadius: CornerRadius.card,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: CornerRadius.card,
+                style: .continuous
+            )
+            .fill(tint)
+            .frame(height: 3)
+        }
         .accessibilityElement(children: .combine)
     }
 }

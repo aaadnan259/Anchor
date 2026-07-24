@@ -133,17 +133,13 @@ struct TodayView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: 40))
-                .foregroundStyle(.secondary)
-            Text("Nothing due today")
-                .font(.anchorHeadline)
-            Text("Habits you add will show up here.")
-                .font(.anchorFootnote)
-                .foregroundStyle(.secondary)
+        Group {
+            if habits.isEmpty {
+                ContentUnavailableView("No Habits Yet", systemImage: "checkmark.circle", description: Text("Add a habit to get started."))
+            } else {
+                ContentUnavailableView("Nothing Due Today", systemImage: "checkmark.circle", description: Text("Nothing scheduled for today. Check back tomorrow."))
+            }
         }
-        .frame(maxWidth: .infinity)
         .padding(.top, Spacing.xxl)
     }
 

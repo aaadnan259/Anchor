@@ -2,6 +2,7 @@ import Foundation
 
 enum DayCompletionState: Equatable {
     case completed
+    case partial
     case missed
     case notDue
 }
@@ -100,7 +101,14 @@ struct StreakService {
             if day < habitStart || !isDue(habit: habit, on: day) {
                 history.append(.notDue)
             } else {
-                history.append(completionService.isFullyCompleted(habit: habit, on: day) ? .completed : .missed)
+                let completedCount = habit.occurrences.filter { completionService.isCompleted(occurrence: $0, on: day) }.count
+                if completedCount == 0 {
+                    history.append(.missed)
+                } else if completedCount == habit.occurrences.count {
+                    history.append(.completed)
+                } else {
+                    history.append(.partial)
+                }
             }
             guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
             day = next

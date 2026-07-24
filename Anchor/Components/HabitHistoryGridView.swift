@@ -39,15 +39,16 @@ struct HabitHistoryGridView: View {
     private func color(for state: DayCompletionState) -> Color {
         switch state {
         case .completed: tint
-        case .missed: tint.opacity(0.18)
-        case .notDue: Color.primary.opacity(0.05)
+        case .partial: tint.opacity(0.45)
+        case .missed: tint.opacity(0.15)
+        case .notDue: Color.primary.opacity(0.08)
         }
     }
 }
 
 #Preview {
     HabitHistoryGridView(
-        days: (0..<112).map { _ in [.completed, .completed, .missed, .notDue].randomElement() ?? .notDue },
+        days: (0..<112).map { _ in [.completed, .completed, .partial, .missed, .notDue].randomElement() ?? .notDue },
         tint: AccentColor.violet.color
     )
     .padding()

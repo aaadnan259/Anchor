@@ -22,6 +22,14 @@ struct StreakServiceTests {
         return (habit, occurrence)
     }
 
+    private func makeDailyHabitWithTwoOccurrences(createdAt: Date) -> (Habit, Occurrence, Occurrence) {
+        let habit = Habit(name: "Prayer", icon: "moon.stars.fill", accentColor: .violet, frequency: .daily, createdAt: createdAt, displayOrder: 0)
+        let first = Occurrence(title: "Fajr", displayOrder: 0, scheduleProvider: .unscheduled)
+        let second = Occurrence(title: "Dhuhr", displayOrder: 1, scheduleProvider: .unscheduled)
+        habit.occurrences = [first, second]
+        return (habit, first, second)
+    }
+
     /// Wires a Completion directly into the in-memory relationship graph, bypassing
     /// CompletionService/ModelContext entirely — StreakService only ever reads this array.
     private func complete(_ occurrence: Occurrence, habit: Habit, on day: Date) {
@@ -172,5 +180,54 @@ struct StreakServiceTests {
         complete(occurrence, habit: habit, on: wednesdayWeek2)
 
         #expect(streakService.currentStreak(for: habit, referenceDate: wednesdayWeek2) == 1)
+    }
+
+    @Test("daily history reports missed for a due day with zero completions")
+    func dailyHistoryReportsMissedWithZeroCompletions() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, _, _) = makeDailyHabitWithTwoOccurrences(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        let history = streakService.dailyHistory(for: habit, days: 1, referenceDate: today)
+
+        #expect(history == [.missed])
+    }
+
+    @Test("daily history reports partial for a due day with some but not all occurrences completed")
+    func dailyHistoryReportsPartialWithSomeCompletions() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, first, _) = makeDailyHabitWithTwoOccurrences(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        complete(first, habit: habit, on: today)
+
+        let history = streakService.dailyHistory(for: habit, days: 1, referenceDate: today)
+
+        #expect(history == [.partial])
+    }
+
+    @Test("daily history reports completed for a due day with all occurrences completed")
+    func dailyHistoryReportsCompletedWithAllCompletions() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, first, second) = makeDailyHabitWithTwoOccurrences(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        complete(first, habit: habit, on: today)
+        complete(second, habit: habit, on: today)
+
+        let history = streakService.dailyHistory(for: habit, days: 1, referenceDate: today)
+
+        #expect(history == [.completed])
+    }
+
+    @Test("daily history reports notDue for a day before the habit was created")
+    func dailyHistoryReportsNotDueBeforeHabitCreated() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, _, _) = makeDailyHabitWithTwoOccurrences(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        let history = streakService.dailyHistory(for: habit, days: 2, referenceDate: today)
+
+        #expect(history.first == .notDue)
     }
 }

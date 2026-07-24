@@ -125,6 +125,7 @@ Shown once, before Today/Habits/Stats, gated by `hasCompletedOnboarding`.
 - Reorder
 - Archive
 - Delete
+- Duplicate
 - Edit
 - Add
 

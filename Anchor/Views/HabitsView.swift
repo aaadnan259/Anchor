@@ -84,6 +84,12 @@ struct HabitsView: View {
                                 Label("Archive", systemImage: "archivebox")
                             }
                             .tint(.orange)
+                            Button {
+                                viewModel?.duplicate(habit)
+                            } label: {
+                                Label("Duplicate", systemImage: "plus.square.on.square")
+                            }
+                            .tint(.gray)
                         }
                 }
                 .onMove(perform: move)
@@ -181,18 +187,9 @@ struct HabitsView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: "list.bullet.clipboard")
-                .font(.system(size: 40))
-                .foregroundStyle(.secondary)
-            Text("No habits yet")
-                .font(.anchorHeadline)
-            Text("Tap + to add your first habit.")
-                .font(.anchorFootnote)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Surface.background)
+        ContentUnavailableView("No Habits Yet", systemImage: "list.bullet.clipboard", description: Text("Tap + to add your first habit."))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Surface.background)
     }
 
     private func move(from source: IndexSet, to destination: Int) {

@@ -12,8 +12,9 @@ struct HabitInsightsView: View {
             VStack(alignment: .leading, spacing: Spacing.lg) {
                 header
                 if let viewModel {
-                    trendSection(viewModel: viewModel)
-                    timeOfDaySection(viewModel: viewModel)
+                    let hasAnyCompletions = viewModel.timeOfDaySlices(for: habit).contains { $0.count > 0 }
+                    trendSection(viewModel: viewModel, hasAnyCompletions: hasAnyCompletions)
+                    timeOfDaySection(viewModel: viewModel, hasAnyCompletions: hasAnyCompletions)
                 }
             }
             .padding(.vertical, Spacing.base)
@@ -55,7 +56,7 @@ struct HabitInsightsView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func trendSection(viewModel: HabitInsightsViewModel) -> some View {
+    private func trendSection(viewModel: HabitInsightsViewModel, hasAnyCompletions: Bool) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             SectionHeaderView(title: "Trend")
 
@@ -67,11 +68,22 @@ struct HabitInsightsView: View {
             .pickerStyle(.segmented)
             .padding(.horizontal, Spacing.base)
 
-            TrendChartView(
-                points: viewModel.trendPoints(for: habit),
-                range: viewModel.selectedRange,
-                tint: habit.accentColor.color
-            )
+            Group {
+                if hasAnyCompletions {
+                    TrendChartView(
+                        points: viewModel.trendPoints(for: habit),
+                        range: viewModel.selectedRange,
+                        tint: habit.accentColor.color
+                    )
+                } else {
+                    ContentUnavailableView(
+                        "Not Enough Data Yet",
+                        systemImage: "chart.line.uptrend.xyaxis",
+                        description: Text("Complete this habit a few times to see trends here.")
+                    )
+                    .frame(height: 180)
+                }
+            }
             .padding(Spacing.base)
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
@@ -85,21 +97,32 @@ struct HabitInsightsView: View {
         }
     }
 
-    private func timeOfDaySection(viewModel: HabitInsightsViewModel) -> some View {
+    private func timeOfDaySection(viewModel: HabitInsightsViewModel, hasAnyCompletions: Bool) -> some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             SectionHeaderView(title: "Time of Day")
 
-            TimeOfDayChartView(slices: viewModel.timeOfDaySlices(for: habit), tint: habit.accentColor.color)
-                .padding(Spacing.base)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
-                        .fill(Surface.card)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
-                        .stroke(Surface.border, lineWidth: 1)
-                )
-                .padding(.horizontal, Spacing.base)
+            Group {
+                if hasAnyCompletions {
+                    TimeOfDayChartView(slices: viewModel.timeOfDaySlices(for: habit), tint: habit.accentColor.color)
+                } else {
+                    ContentUnavailableView(
+                        "No Completions Yet",
+                        systemImage: "clock",
+                        description: Text("Complete this habit to see when you usually do it.")
+                    )
+                    .frame(height: 140)
+                }
+            }
+            .padding(Spacing.base)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
+                    .fill(Surface.card)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
+                    .stroke(Surface.border, lineWidth: 1)
+            )
+            .padding(.horizontal, Spacing.base)
         }
     }
 }

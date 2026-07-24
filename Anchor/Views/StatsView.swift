@@ -112,17 +112,8 @@ struct StatsView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: Spacing.sm) {
-            Image(systemName: "chart.bar.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(.secondary)
-            Text("No stats yet")
-                .font(.anchorHeadline)
-            Text("Complete a habit to start building streaks.")
-                .font(.anchorFootnote)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Surface.background)
+        ContentUnavailableView("No Stats Yet", systemImage: "chart.bar.fill", description: Text("Complete a habit to start building streaks."))
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Surface.background)
     }
 }

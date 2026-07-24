@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 @main
 struct AnchorApp: App {
@@ -11,6 +12,7 @@ struct AnchorApp: App {
 
     init() {
         container = Self.isRunningTests ? Self.makeInMemoryContainer() : Self.makeContainer()
+        Self.configureTabBarAppearance()
     }
 
     var body: some Scene {
@@ -40,6 +42,16 @@ struct AnchorApp: App {
 
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
+    /// SwiftUI's TabView renders unselected tab icons noticeably dim in dark mode; bump them
+    /// to `.secondaryLabel` for better legibility. Only UIKit-appearance-proxy code in the app.
+    private static func configureTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.stackedLayoutAppearance.normal.iconColor = .secondaryLabel
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 
     private static func makeInMemoryContainer() -> ModelContainer {

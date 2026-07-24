@@ -17,7 +17,10 @@ struct ProgressRingView: View {
                 .stroke(tint.opacity(0.15), lineWidth: lineWidth)
             Circle()
                 .trim(from: 0, to: clamped)
-                .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .stroke(
+                    AngularGradient(colors: [tint.opacity(0.75), tint], center: .center),
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
                 .rotationEffect(.degrees(-90))
                 .animation(reduceMotion ? .linear(duration: 0.1) : Motion.snappy, value: clamped)
         }

@@ -45,6 +45,11 @@ final class HabitsViewModel {
         rescheduleNotifications()
     }
 
+    func duplicate(_ habit: Habit) {
+        habitService.duplicate(habit)
+        rescheduleNotifications()
+    }
+
     func reorder(_ habits: [Habit]) {
         habitService.reorder(habits)
     }

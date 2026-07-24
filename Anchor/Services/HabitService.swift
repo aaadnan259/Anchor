@@ -89,6 +89,20 @@ struct HabitService {
         )
     }
 
+    func duplicate(_ habit: Habit) -> Habit {
+        create(
+            name: "\(habit.name) Copy",
+            icon: habit.icon,
+            accentColor: habit.accentColor,
+            frequency: habit.frequency,
+            occurrences: habit.occurrences
+                .sorted { $0.displayOrder < $1.displayOrder }
+                .map { ($0.title, $0.scheduleProvider) },
+            reminderEnabled: habit.reminderEnabled,
+            displayOrder: fetchAll().count
+        )
+    }
+
     private func occurrences(for preset: HabitPreset) -> [(title: String, scheduleProvider: ScheduleProviderKind)] {
         switch preset.occurrenceMode {
         case .prayer:
