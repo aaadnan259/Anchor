@@ -12,7 +12,9 @@ This document defines **how Anchor is built**, not **what Anchor does**.
 
 Product behavior belongs in `PROJECT_SPEC.md`.
 
-Engineering standards belong in `CLAUDE.md`.
+Engineering standards belong in `../CLAUDE.md`.
+
+The reasoning behind non-obvious choices belongs in `DECISIONS.md` — this file describes the current shape, not why every alternative was rejected.
 
 ---
 
@@ -288,9 +290,11 @@ Fields
 
 - name
 
-- icon
+- icon (SF Symbol name, or a single emoji — see `String.isSFSymbolCompatible`)
 
-- accentColor
+- accentColor (one of the 8 curated cases; always set, even when customColorHex overrides it)
+
+- customColorHex (optional; exact color that overrides accentColor when set)
 
 - frequency
 
@@ -302,13 +306,33 @@ Fields
 
 - displayOrder
 
-Relationship
+- targetValue (optional; numeric daily target, nil for binary habits)
+
+- unit (optional; display label for targetValue, e.g. "glasses")
+
+Computed, not stored
+
+- tintColor → customColorHex.map(Color.init) ?? accentColor.color
+
+Relationships
 
 One Habit
 
 ↓
 
 Many Occurrences
+
+One Habit
+
+↓
+
+Many Completions (via Occurrence)
+
+One Habit
+
+↓
+
+Many Shields
 
 ---
 
@@ -356,9 +380,29 @@ Fields
 
 - completedAt
 
+- value (defaults to 1; for quantifiable habits, compared against Habit.targetValue — see CompletionService.isCompleted)
+
 Never store streaks.
 
 Always calculate.
+
+---
+
+## Shield
+
+Represents one day a habit is exempt from breaking its streak (vacation, illness).
+
+Fields
+
+- id
+
+- habitID
+
+- day
+
+Habit-day granularity only — a Shield protects the whole habit for one day, not one occurrence within it. Only meaningful for Daily/Weekdays habits (see Frequency.supportsShields); never persist a Shield for a `.timesPerWeek` habit.
+
+Never counted as a completion. Read only by StreakService (streak continuity) and the History grid (display).
 
 ---
 
@@ -454,13 +498,75 @@ Best streak
 
 Completion %
 
+Daily history (for the heatmap)
+
+Reads CompletionService.isCompleted/isFullyCompleted and CompletionService.isShielded — never re-implements either check.
+
 Never persist calculated values.
+
+---
+
+## CompletionService
+
+The single choke point for "is this done."
+
+Owns
+
+isCompleted / isFullyCompleted (occurrence- and habit-level; threshold-aware for quantifiable habits)
+
+toggle (binary habits) / logValue (quantifiable habits)
+
+isShielded / toggleShield
+
+Every other service or view model that needs completion state calls through this — never re-implemented elsewhere.
+
+---
+
+## InsightsService
+
+Calculates trend and time-of-day data for Habit Insights.
+
+Trend (week/month/year buckets)
+
+Time-of-day distribution (Night/Morning/Afternoon/Evening)
+
+Reads CompletionService; never re-implements completion logic.
+
+---
+
+## ExportService
+
+Stateless. Operates on `[Habit]` passed in — no ModelContext dependency.
+
+CSV (flat, one row per completion) and JSON (nested per habit) export.
+
+Includes archived habits. Never special-cases habit type (quantifiable habits export their raw `value`).
+
+---
+
+## AuthenticationService
+
+Wraps LocalAuthentication (`LAContext`). Never expose `LAContext`/`LABiometryType` outside this file.
+
+biometryKind() — none / touchID / faceID, for choosing the right icon and toggle label.
+
+authenticate() — `.deviceOwnerAuthentication` (biometrics with device-passcode fallback), never biometrics-only.
 
 ---
 
 # Navigation
 
-Single TabView
+Root branch (`AnchorApp`), in order
+
+1. Test host → straight to RootTabView, no gating
+
+2. `!hasCompletedOnboarding` → OnboardingView (full-screen flow, one-time)
+
+3. `biometricLockEnabled && !isUnlocked` → LockScreenView (re-locks on every background→foreground)
+
+4. else → RootTabView
+
+Single TabView (RootTabView)
 
 Today
 
@@ -470,13 +576,25 @@ Stats
 
 Modal sheets
 
-Add Habit
+Add Habit / Edit Habit (from Today, Habits)
 
-Edit Habit
+Settings (from Today's gear icon)
+
+Log Value (from Today, quantifiable habits only)
+
+Manage Shielded Days (from Habit Insights)
 
 System permission dialogs
 
-No deep navigation hierarchy.
+Push navigation
+
+Stats → Habit Insights (tap a stat card)
+
+Quick actions (no navigation, no new screen)
+
+Today: long-press a habit card → Shield Today / Remove Shield (Daily/Weekdays habits only)
+
+No deeper hierarchy than this. If a feature needs a third level of push navigation, reconsider whether it belongs in Anchor at all.
 
 ---
 
@@ -528,7 +646,11 @@ Occurrences
 
 Completions
 
+Shields
+
 Everything else is derived.
+
+App-wide preferences (appearance, accent color, calculation method, biometric lock, smart reminders) are UserDefaults via SettingsService, not SwiftData — they're scalar settings, not relational business data.
 
 ---
 
@@ -582,11 +704,13 @@ ProgressRing
 
 HabitCard
 
+HabitIcon (renders an SF Symbol or an emoji from the same `icon: String` — see `String.isSFSymbolCompatible`)
+
 CompletionToggle
 
-IconPicker
+IconPicker (Symbols/Emoji segmented)
 
-ColorPicker
+AccentColorPicker (8 curated swatches + 1 custom via native ColorPicker)
 
 SectionHeader
 
@@ -720,7 +844,7 @@ Never
 
 - Special-case Prayer
 
-- Add features outside PROJECT_SPEC.md
+- Add features outside `PROJECT_SPEC.md`
 
 - Introduce dependencies without approval
 
