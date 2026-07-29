@@ -50,13 +50,13 @@ struct StatsView: View {
             HStack(alignment: .top, spacing: Spacing.md) {
                 ZStack {
                     RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                        .fill(stat.habit.accentColor.color.opacity(0.12))
+                        .fill(stat.habit.tintColor.opacity(0.12))
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                                .stroke(stat.habit.accentColor.color.opacity(0.35), lineWidth: 1)
+                                .stroke(stat.habit.tintColor.opacity(0.35), lineWidth: 1)
                         )
-                    Image(systemName: stat.habit.icon)
-                        .foregroundStyle(stat.habit.accentColor.color)
+                    HabitIconView(icon: stat.habit.icon)
+                        .foregroundStyle(stat.habit.tintColor)
                 }
                 .frame(width: 40, height: 40)
 
@@ -70,7 +70,7 @@ struct StatsView: View {
 
                 Spacer()
 
-                WeeklyBarsView(rates: stat.weeklyRates, tint: stat.habit.accentColor.color)
+                WeeklyBarsView(rates: stat.weeklyRates, tint: stat.habit.tintColor)
 
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
@@ -79,10 +79,10 @@ struct StatsView: View {
 
             HStack(spacing: Spacing.lg) {
                 statBadge(icon: "flame.fill", label: "Current", value: stat.currentStreak, tint: .orange)
-                statBadge(icon: "trophy.fill", label: "Best", value: stat.bestStreak, tint: stat.habit.accentColor.color)
+                statBadge(icon: "trophy.fill", label: "Best", value: stat.bestStreak, tint: stat.habit.tintColor)
             }
 
-            HabitHistoryGridView(days: stat.history, tint: stat.habit.accentColor.color)
+            HabitHistoryGridView(days: stat.history, tint: stat.habit.tintColor)
         }
         .padding(Spacing.base)
         .background(

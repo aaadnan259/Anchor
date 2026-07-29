@@ -18,7 +18,8 @@ struct HabitService {
         reminderEnabled: Bool,
         displayOrder: Int,
         targetValue: Int? = nil,
-        unit: String? = nil
+        unit: String? = nil,
+        customColorHex: UInt? = nil
     ) -> Habit {
         let habit = Habit(
             name: name,
@@ -28,7 +29,8 @@ struct HabitService {
             reminderEnabled: reminderEnabled,
             displayOrder: displayOrder,
             targetValue: targetValue,
-            unit: unit
+            unit: unit,
+            customColorHex: customColorHex
         )
         habit.occurrences = occurrences.enumerated().map { index, item in
             Occurrence(title: item.title, displayOrder: index, scheduleProvider: item.scheduleProvider)
@@ -46,7 +48,8 @@ struct HabitService {
         frequency: Frequency,
         reminderEnabled: Bool,
         targetValue: Int?,
-        unit: String?
+        unit: String?,
+        customColorHex: UInt?
     ) {
         habit.name = name
         habit.icon = icon
@@ -55,6 +58,7 @@ struct HabitService {
         habit.reminderEnabled = reminderEnabled
         habit.targetValue = targetValue
         habit.unit = unit
+        habit.customColorHex = customColorHex
         try? context.save()
     }
 
@@ -110,7 +114,8 @@ struct HabitService {
             reminderEnabled: habit.reminderEnabled,
             displayOrder: fetchAll().count,
             targetValue: habit.targetValue,
-            unit: habit.unit
+            unit: habit.unit,
+            customColorHex: habit.customColorHex
         )
     }
 

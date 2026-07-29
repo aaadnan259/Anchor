@@ -141,13 +141,13 @@ struct HabitsView: View {
             HStack(alignment: .top, spacing: Spacing.md) {
                 ZStack {
                     RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                        .fill(habit.accentColor.color.opacity(0.12))
+                        .fill(habit.tintColor.opacity(0.12))
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
-                                .stroke(habit.accentColor.color.opacity(0.35), lineWidth: 1)
+                                .stroke(habit.tintColor.opacity(0.35), lineWidth: 1)
                         )
-                    Image(systemName: habit.icon)
-                        .foregroundStyle(habit.accentColor.color)
+                    HabitIconView(icon: habit.icon)
+                        .foregroundStyle(habit.tintColor)
                 }
                 .frame(width: 40, height: 40)
 

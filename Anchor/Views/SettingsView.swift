@@ -42,6 +42,7 @@ struct SettingsView: View {
                 jsonExportURL = exportService.jsonFileURL(habits: habits)
             }
         }
+        .tint(settingsService.effectiveAccentColor)
         .preferredColorScheme(settingsService.appearance.colorScheme)
     }
 
@@ -108,7 +109,7 @@ struct SettingsView: View {
             .pickerStyle(.segmented)
             .padding(.horizontal, Spacing.base)
 
-            AccentColorPickerView(selection: Bindable(settingsService).accentColor)
+            AccentColorPickerView(selection: Bindable(settingsService).accentColor, customColorHex: Bindable(settingsService).customAccentColorHex)
                 .padding(.horizontal, Spacing.base)
         }
     }

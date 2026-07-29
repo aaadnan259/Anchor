@@ -80,6 +80,14 @@ final class TodayViewModel {
         return min(Double(value(for: occurrence, on: date)) / Double(target), 1.0)
     }
 
+    func isShielded(habit: Habit, on date: Date = .now) -> Bool {
+        completionService.isShielded(habit: habit, on: date)
+    }
+
+    func toggleShield(habit: Habit, on date: Date = .now) {
+        completionService.toggleShield(habit: habit, on: date)
+    }
+
     func toggleExpanded(_ habitID: UUID) {
         if expandedHabitIDs.contains(habitID) {
             expandedHabitIDs.remove(habitID)

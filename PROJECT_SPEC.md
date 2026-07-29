@@ -66,6 +66,7 @@ Habit
 - displayOrder
 - targetValue (optional) — numeric daily target for quantifiable habits, nil for binary habits
 - unit (optional) — display label for the target (e.g. "glasses"), nil for binary habits
+- customColorHex (optional) — exact custom tint, overrides the curated `color` when set
 
 Occurrence
 - id
@@ -122,6 +123,7 @@ Shown once, before Today/Habits/Stats, gated by `hasCompletedOnboarding`.
 - Expandable occurrences
 - One-tap completion
 - Quantifiable habits show a fill ring instead of a checkmark; tapping opens a stepper sheet to log today's value
+- Long-press a habit card (Daily/Weekdays habits only) for a "Shield Today" quick action — a blue shield badge shows once active
 - Smooth animations
 - Haptics
 
@@ -136,8 +138,8 @@ Shown once, before Today/Habits/Stats, gated by `hasCompletedOnboarding`.
 ### Add/Edit
 Fields:
 - Name
-- Icon
-- Color
+- Icon — a curated SF Symbol grid, or a single Apple emoji entered via a text field and the system emoji keyboard
+- Color — 8 curated swatches, or an exact custom color via a native color picker
 - Frequency
 - Occurrences
 - Track a Number (Custom/single-occurrence habits only) — numeric daily target + unit label, logged via a stepper instead of a binary checkmark
@@ -160,14 +162,14 @@ Preset cards:
 Pushed from a Stats card (tap).
 - Trend chart (line): completion rate over Week (last 12 weeks), Month (last 12 months), or Year (last 5 years) — segmented picker
 - Time-of-day pattern: completions bucketed into Night/Morning/Afternoon/Evening, with a "usually completed in the ___" summary
-- History: the same completion grid shown on Stats, plus (Daily/Weekdays habits only) a "Manage Shielded Days" sheet — mark a day as exempt via a date picker so it doesn't break a streak, for vacation/illness. Shielded days render as a distinct color in the grid and don't count toward or break current/best streak. Not available for weekly-target habits.
+- History: the same completion grid shown on Stats, plus (Daily/Weekdays habits only) a "Manage Shielded Days" sheet — mark a day as exempt via a date picker so it doesn't break a streak, for vacation/illness, past or future. Shielded days render as a distinct color in the grid and don't count toward or break current/best streak. Not available for weekly-target habits. The same shield/unshield toggle is also available faster, for today specifically, via long-press on the habit's Today card.
 
 ### Settings
 Reached via gear icon on Today.
 - Prayer calculation method (13 methods, e.g. Muslim World League, ISNA, Umm al-Qura)
 - Prayer Asr calculation (Shafi/Hanafi madhab)
 - Appearance override (System/Light/Dark), applies instantly app-wide including the Settings sheet itself
-- App-wide accent color (8-color palette, reuses the same picker as per-habit colors), independent of individual habits' own colors
+- App-wide accent color (8-color palette or an exact custom color, reuses the same picker as per-habit colors), independent of individual habits' own colors
 - Notification authorization status (read-only) with a deep link to system settings when denied
 - Smart Reminders (opt-in): one evening check-in notification (fixed 8:00 PM) per habit still due and incomplete as of the last reschedule, independent of any per-habit reminder
 - App Lock (Face ID/Touch ID, with device-passcode fallback), toggle only shown when the device has usable biometry enrolled — re-locks on every background→foreground transition, gated after onboarding
@@ -195,7 +197,7 @@ Animations:
 
 Colors:
 - Semantic colors
-- Curated accent palette
+- Curated accent palette, or an exact custom color per habit and app-wide
 - Full Light/Dark support
 
 ## Accessibility

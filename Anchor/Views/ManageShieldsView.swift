@@ -18,12 +18,12 @@ struct ManageShieldsView: View {
                         displayedComponents: .date
                     )
                     .datePickerStyle(.graphical)
-                    .tint(habit.accentColor.color)
+                    .tint(habit.tintColor)
                     .listRowSeparator(.hidden)
 
                     PrimaryButtonView(
                         title: isSelectedDateShielded ? "Remove Shield" : "Shield This Day",
-                        tint: habit.accentColor.color
+                        tint: habit.tintColor
                     ) {
                         viewModel.toggleShield(habit: habit, on: selectedDate)
                     }

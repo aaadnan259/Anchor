@@ -13,9 +13,12 @@ struct HabitCardView: View {
     var isExpandable: Bool = false
     var isExpanded: Bool = false
     var isQuantifiable: Bool = false
+    var isShielded: Bool = false
+    var supportsShields: Bool = false
     let onToggleCompletion: () -> Void
     var onTapExpand: (() -> Void)? = nil
     var onTapLogValue: (() -> Void)? = nil
+    var onToggleShield: (() -> Void)? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: Spacing.md) {
@@ -26,7 +29,7 @@ struct HabitCardView: View {
                         RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
                             .stroke(tint.opacity(0.35), lineWidth: 1)
                     )
-                Image(systemName: icon)
+                HabitIconView(icon: icon)
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(tint)
             }
@@ -55,6 +58,13 @@ struct HabitCardView: View {
                 .foregroundStyle(.orange)
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(streak) day streak")
+            }
+
+            if isShielded {
+                Image(systemName: "shield.fill")
+                    .font(.caption)
+                    .foregroundStyle(.blue)
+                    .accessibilityLabel("Shielded today")
             }
 
             if isExpandable {
@@ -124,6 +134,18 @@ struct HabitCardView: View {
             .frame(height: 3)
         }
         .accessibilityElement(children: .combine)
+        .contextMenu {
+            if supportsShields {
+                Button {
+                    onToggleShield?()
+                } label: {
+                    Label(
+                        isShielded ? "Remove Shield" : "Shield Today",
+                        systemImage: isShielded ? "shield.slash" : "shield.fill"
+                    )
+                }
+            }
+        }
     }
 }
 

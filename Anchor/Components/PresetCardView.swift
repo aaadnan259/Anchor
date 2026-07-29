@@ -13,7 +13,7 @@ struct PresetCardView: View {
                     Circle()
                         .fill(tint.opacity(0.12))
                         .overlay(Circle().stroke(tint.opacity(0.35), lineWidth: 1))
-                    Image(systemName: icon)
+                    HabitIconView(icon: icon)
                         .foregroundStyle(tint)
                         .font(.system(size: 20, weight: .semibold))
                 }

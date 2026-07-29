@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 @Observable
 @MainActor
@@ -25,6 +26,7 @@ final class AddEditHabitViewModel {
     var name: String = ""
     var icon: String = "star.fill"
     var accentColor: AccentColor = .indigo
+    var customColorHex: UInt? = nil
     var frequencyKind: FrequencyKind = .daily
     var selectedWeekdays: Set<Weekday> = [.monday, .tuesday, .wednesday, .thursday, .friday]
     var timesPerWeekTarget: Int = 3
@@ -53,6 +55,9 @@ final class AddEditHabitViewModel {
     var isEditing: Bool { existingHabit != nil }
     var isSaveDisabled: Bool { name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
+    /// The in-progress tint: an exact custom color when set, otherwise the curated `accentColor`.
+    var effectiveAccentColor: Color { customColorHex.map { Color(hex: $0) } ?? accentColor.color }
+
     init(
         habitService: HabitService,
         habit: Habit?,
@@ -80,6 +85,7 @@ final class AddEditHabitViewModel {
         name = preset.name
         icon = preset.icon
         accentColor = preset.accentColor
+        customColorHex = nil
         reminderEnabled = preset.reminderEnabled
         occurrenceMode = preset.occurrenceMode
         applyFrequency(preset.frequency)
@@ -89,6 +95,7 @@ final class AddEditHabitViewModel {
         name = ""
         icon = "star.fill"
         accentColor = .indigo
+        customColorHex = nil
         frequencyKind = .daily
         selectedWeekdays = [.monday, .tuesday, .wednesday, .thursday, .friday]
         timesPerWeekTarget = 3
@@ -112,7 +119,8 @@ final class AddEditHabitViewModel {
                 frequency: frequency,
                 reminderEnabled: reminderEnabled,
                 targetValue: isQuantifiable ? targetValue : nil,
-                unit: isQuantifiable ? trimmedUnit : nil
+                unit: isQuantifiable ? trimmedUnit : nil,
+                customColorHex: customColorHex
             )
             if occurrenceMode == .single, let occurrence = existingHabit.occurrences.first {
                 habitService.updateOccurrence(occurrence, scheduleProvider: singleOccurrenceSchedule)
@@ -127,7 +135,8 @@ final class AddEditHabitViewModel {
                 reminderEnabled: reminderEnabled,
                 displayOrder: nextDisplayOrder,
                 targetValue: isQuantifiable ? targetValue : nil,
-                unit: isQuantifiable ? trimmedUnit : nil
+                unit: isQuantifiable ? trimmedUnit : nil,
+                customColorHex: customColorHex
             )
         }
 
@@ -154,6 +163,7 @@ final class AddEditHabitViewModel {
         name = habit.name
         icon = habit.icon
         accentColor = habit.accentColor
+        customColorHex = habit.customColorHex
         reminderEnabled = habit.reminderEnabled
         applyFrequency(habit.frequency)
 

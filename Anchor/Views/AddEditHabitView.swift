@@ -68,13 +68,13 @@ struct AddEditHabitView: View {
 
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     SectionHeaderView(title: "Icon")
-                    IconPickerView(selection: Bindable(viewModel).icon, tint: viewModel.accentColor.color)
+                    IconPickerView(selection: Bindable(viewModel).icon, tint: viewModel.effectiveAccentColor)
                         .padding(.horizontal, Spacing.base)
                 }
 
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     SectionHeaderView(title: "Color")
-                    AccentColorPickerView(selection: Bindable(viewModel).accentColor)
+                    AccentColorPickerView(selection: Bindable(viewModel).accentColor, customColorHex: Bindable(viewModel).customColorHex)
                         .padding(.horizontal, Spacing.base)
                 }
 
@@ -174,7 +174,7 @@ struct AddEditHabitView: View {
                         .font(.anchorCaption.weight(.semibold))
                         .frame(width: 40, height: 40)
                         .foregroundStyle(isSelected ? .white : .primary)
-                        .background(Circle().fill(isSelected ? viewModel.accentColor.color : Surface.card))
+                        .background(Circle().fill(isSelected ? viewModel.effectiveAccentColor : Surface.card))
                         .frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }

@@ -25,7 +25,7 @@ struct LogValueView: View {
                 VStack(spacing: Spacing.sm) {
                     Text("\(value)")
                         .font(.system(size: 56, weight: .bold, design: .rounded))
-                        .foregroundStyle(habit.accentColor.color)
+                        .foregroundStyle(habit.tintColor)
                     if let target = habit.targetValue {
                         Text("of \(target)\(habit.unit.map { " \($0)" } ?? "")")
                             .font(.anchorBody)

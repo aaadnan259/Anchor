@@ -13,11 +13,11 @@ struct LockScreenView: View {
 
             ZStack {
                 Circle()
-                    .fill(settingsService.accentColor.color.opacity(0.12))
-                    .overlay(Circle().stroke(settingsService.accentColor.color.opacity(0.35), lineWidth: 1))
+                    .fill(settingsService.effectiveAccentColor.opacity(0.12))
+                    .overlay(Circle().stroke(settingsService.effectiveAccentColor.opacity(0.35), lineWidth: 1))
                 Image(systemName: iconName)
                     .font(.system(size: 28, weight: .semibold))
-                    .foregroundStyle(settingsService.accentColor.color)
+                    .foregroundStyle(settingsService.effectiveAccentColor)
             }
             .frame(width: 72, height: 72)
 
@@ -34,7 +34,7 @@ struct LockScreenView: View {
             Spacer()
             Spacer()
 
-            PrimaryButtonView(title: "Unlock", tint: settingsService.accentColor.color) {
+            PrimaryButtonView(title: "Unlock", tint: settingsService.effectiveAccentColor) {
                 Task { await authenticate() }
             }
         }

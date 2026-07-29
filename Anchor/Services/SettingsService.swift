@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 @MainActor
 @Observable
@@ -25,6 +26,21 @@ final class SettingsService {
         didSet { defaults.set(accentColor.rawValue, forKey: Keys.accentColor) }
     }
 
+    var customAccentColorHex: UInt? {
+        didSet {
+            if let customAccentColorHex {
+                defaults.set(Int(customAccentColorHex), forKey: Keys.customAccentColorHex)
+            } else {
+                defaults.removeObject(forKey: Keys.customAccentColorHex)
+            }
+        }
+    }
+
+    /// The app-wide tint: an exact custom color when set, otherwise the curated `accentColor`.
+    var effectiveAccentColor: Color {
+        customAccentColorHex.map { Color(hex: $0) } ?? accentColor.color
+    }
+
     var biometricLockEnabled: Bool {
         didSet { defaults.set(biometricLockEnabled, forKey: Keys.biometricLockEnabled) }
     }
@@ -40,6 +56,7 @@ final class SettingsService {
         appearance = AppAppearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
         hasCompletedOnboarding = defaults.bool(forKey: Keys.hasCompletedOnboarding)
         accentColor = AccentColor(rawValue: defaults.string(forKey: Keys.accentColor) ?? "") ?? .indigo
+        customAccentColorHex = (defaults.object(forKey: Keys.customAccentColorHex) as? Int).map(UInt.init)
         biometricLockEnabled = defaults.bool(forKey: Keys.biometricLockEnabled)
         smartRemindersEnabled = defaults.bool(forKey: Keys.smartRemindersEnabled)
     }
@@ -50,6 +67,7 @@ final class SettingsService {
         static let appearance = "settings.appearance"
         static let hasCompletedOnboarding = "settings.hasCompletedOnboarding"
         static let accentColor = "settings.accentColor"
+        static let customAccentColorHex = "settings.customAccentColorHex"
         static let biometricLockEnabled = "settings.biometricLockEnabled"
         static let smartRemindersEnabled = "settings.smartRemindersEnabled"
     }

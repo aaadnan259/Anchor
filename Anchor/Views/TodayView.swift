@@ -72,7 +72,7 @@ struct TodayView: View {
             Spacer()
             ProgressRingView(
                 progress: progress,
-                tint: settingsService.accentColor.color,
+                tint: settingsService.effectiveAccentColor,
                 size: 56,
                 accessibilityLabelText: "Today's overall progress"
             )
@@ -101,13 +101,15 @@ struct TodayView: View {
                     icon: row.habit.icon,
                     title: row.habit.name,
                     subtitle: (row.isExpandable && isExpanded) ? nil : row.subtitle,
-                    tint: row.habit.accentColor.color,
+                    tint: row.habit.tintColor,
                     streak: row.streak,
                     isCompleted: row.isFullyCompleted,
                     progress: row.isExpandable ? row.progress : (isQuantifiable ? viewModel.quantifiableProgress(for: row, on: today) : nil),
                     isExpandable: row.isExpandable,
                     isExpanded: isExpanded,
                     isQuantifiable: isQuantifiable,
+                    isShielded: viewModel.isShielded(habit: row.habit, on: today),
+                    supportsShields: row.habit.frequency.supportsShields,
                     onToggleCompletion: {
                         if let only = row.due.first {
                             viewModel.toggle(habit: row.habit, occurrence: only.occurrence, on: today)
@@ -120,6 +122,9 @@ struct TodayView: View {
                         if let occurrence = row.due.first?.occurrence {
                             loggingTarget = LoggingTarget(habit: row.habit, occurrence: occurrence)
                         }
+                    },
+                    onToggleShield: {
+                        viewModel.toggleShield(habit: row.habit, on: today)
                     }
                 )
 
@@ -130,7 +135,7 @@ struct TodayView: View {
                                 title: due.occurrence.title,
                                 timeLabel: due.time?.formatted(date: .omitted, time: .shortened),
                                 isCompleted: viewModel.isCompleted(occurrence: due.occurrence, on: today),
-                                tint: row.habit.accentColor.color,
+                                tint: row.habit.tintColor,
                                 onToggleCompletion: {
                                     viewModel.toggle(habit: row.habit, occurrence: due.occurrence, on: today)
                                 }

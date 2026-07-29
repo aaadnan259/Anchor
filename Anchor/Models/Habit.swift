@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 final class Habit {
@@ -13,12 +14,18 @@ final class Habit {
     var displayOrder: Int
     var targetValue: Int?
     var unit: String?
+    var customColorHex: UInt?
 
     private var frequencyData: Data
 
     var frequency: Frequency {
         get { (try? JSONDecoder().decode(Frequency.self, from: frequencyData)) ?? .daily }
         set { frequencyData = (try? JSONEncoder().encode(newValue)) ?? Data() }
+    }
+
+    /// This habit's effective tint: an exact custom color when set, otherwise the curated `accentColor`.
+    var tintColor: Color {
+        customColorHex.map { Color(hex: $0) } ?? accentColor.color
     }
 
     @Relationship(deleteRule: .cascade, inverse: \Occurrence.habit)
@@ -41,7 +48,8 @@ final class Habit {
         createdAt: Date = .now,
         displayOrder: Int = 0,
         targetValue: Int? = nil,
-        unit: String? = nil
+        unit: String? = nil,
+        customColorHex: UInt? = nil
     ) {
         self.id = id
         self.name = name
@@ -54,5 +62,6 @@ final class Habit {
         self.displayOrder = displayOrder
         self.targetValue = targetValue
         self.unit = unit
+        self.customColorHex = customColorHex
     }
 }
