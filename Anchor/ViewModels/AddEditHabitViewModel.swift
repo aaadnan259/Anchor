@@ -41,7 +41,15 @@ final class AddEditHabitViewModel {
     }
     var isQuantifiable: Bool = false
     var targetValue: Int = 8
-    var unitLabel: String = ""
+    var unitLabel: String = "" {
+        didSet {
+            if unitLabel.count > Self.maxUnitLabelLength {
+                unitLabel = String(unitLabel.prefix(Self.maxUnitLabelLength))
+            }
+        }
+    }
+
+    private static let maxUnitLabelLength = 24
 
     private let habitService: HabitService
     private let existingHabit: Habit?
