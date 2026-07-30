@@ -18,7 +18,7 @@ This boundary has held consistently across every feature added. Don't add a test
 
 **Current suite: 46 tests, all passing, across 7 files:**
 
-- `AnchorTests/StreakServiceTests.swift` — the largest by far (40+ cases). Streak continuity, best-vs-current streak, weekly-target streaks, `dailyHistory`'s multi-way state (`.completed`/`.partial`/`.missed`/`.notDue`/`.shielded`), shield streak-continuity/non-increment/priority-ordering, quantifiable-habit threshold breaking/completing/history-transition.
+- `AnchorTests/StreakServiceTests.swift` — the largest by far (20 cases). Streak continuity, best-vs-current streak, weekly-target streaks, `dailyHistory`'s multi-way state (`.completed`/`.partial`/`.missed`/`.notDue`/`.shielded`), shield streak-continuity/non-increment/priority-ordering, quantifiable-habit threshold breaking/completing/history-transition.
 - `AnchorTests/InsightsServiceTests.swift` — trend bucketing (week/month/year, including boundary cases), time-of-day distribution bucketing.
 - `AnchorTests/ScheduleProviderTests.swift` — `FixedTimeProvider`, `WeeklyProvider`, `PrayerProvider` (with and without a coordinate).
 - `AnchorTests/ExportServiceTests.swift` — CSV header/escaping/quoting, zero-completion edge case, JSON round-trip, archived-habit inclusion, quantifiable-habit value export.
