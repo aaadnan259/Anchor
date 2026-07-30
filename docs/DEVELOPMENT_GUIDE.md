@@ -35,14 +35,19 @@ The `.app` bundle after a build lives under `~/Library/Developer/Xcode/DerivedDa
 **For a physical device** (see `CLAUDE_CONTEXT.md`'s Distribution constraints for what this can and can't do):
 
 ```bash
-xcrun xctrace list devices                                                    # find the UDID
-xcodebuild build -destination 'id=<UDID>' -allowProvisioningUpdates \
+xcrun xctrace list devices                                                    # find the UDID for xcodebuild
+xcodebuild build -destination 'id=<xctrace-UDID>' -allowProvisioningUpdates \
   -project Anchor.xcodeproj -scheme Anchor
-xcrun devicectl device install app --device <UDID> <path-to>.app
-xcrun devicectl device process launch --device <UDID> com.adnan.Anchor
+xcrun devicectl list devices                                                  # find the (different!) identifier for devicectl
+xcrun devicectl device install app --device <devicectl-identifier> <path-to>.app
+xcrun devicectl device process launch --device <devicectl-identifier> com.adnan.Anchor
 ```
 
-First install on any device needs a one-time manual trust: Settings → General → VPN & Device Management → trust the developer certificate. Free "Personal Team" signing expires after 7 days and only supports direct USB install — no OTA distribution, no TestFlight without a paid Apple Developer Program membership (which Claude cannot enroll the user in — see `CLAUDE_CONTEXT.md`).
+**Important:** `xcrun xctrace list devices` and `xcrun devicectl list devices` report *different identifier strings for the same physical device* (e.g. `00008140-...` vs. a UUID like `CBAAC27C-...`). Use the `xctrace` one for `xcodebuild -destination`, the `devicectl` one for both `devicectl` subcommands — passing the wrong one gives a confusing "Unable to find a device matching the provided destination specifier" error even though the device is genuinely connected.
+
+If `devicectl list devices` shows a device as `connected (no DDI)` rather than `connected`, it usually just needs the "Trust This Computer?" prompt confirmed on the device itself (or the device unlocked) — try the build/install anyway, it can still succeed.
+
+First **launch** on any device fails with `"...its profile has not been explicitly trusted by the user"` until a one-time manual trust: Settings → General → VPN & Device Management → tap the developer profile → Trust. This is a separate trust step from "Trust This Computer" above and can only be done on the device itself — no command-line workaround. After trusting, either tap the app icon on the device or re-run `devicectl device process launch`. Free "Personal Team" signing expires after 7 days and only supports direct USB install — no OTA distribution, no TestFlight without a paid Apple Developer Program membership (which Claude cannot enroll the user in — see `CLAUDE_CONTEXT.md`).
 
 ## How To Test
 

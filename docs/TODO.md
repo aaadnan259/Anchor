@@ -2,7 +2,7 @@
 
 Prioritized backlog. This is the actionable, living companion to `PROJECT_SPEC.md`'s "Future Roadmap" and "Backlog" sections — those describe *what*, this describes *what to do about it and in what order*.
 
-There is currently nothing Critical or High priority open. The v1 feature set is complete.
+There is currently nothing Critical, High, Medium, or Low priority open. The v1 feature set is complete and every backlog verification/polish item has been closed out (see the strikethrough entries below for what was done and when).
 
 ---
 
@@ -16,10 +16,7 @@ None.
 
 ## Medium
 
-### Verify emoji entry / custom ColorPicker end-to-end
-- **Why it's here:** these two interaction paths were implemented and code-reviewed carefully, and their surrounding UI was confirmed visually via screenshots, but the actual gesture (typing/pasting an emoji, opening the native `ColorPicker` sheet) still can't be driven through the simulator-automation tooling available in this environment. Re-attempted 2026-07-30 with correct tap coordinates and a clean simulator session — confirmed this is a genuine tooling gap (no on-screen software keyboard renders at all; `UIColorWell` doesn't respond to synthetic taps), not a flaky environment or a code issue. See `KNOWN_ISSUES.md` #1/#2.
-- **Complexity:** Low (no code change expected — this is a verification task, not a feature).
-- **Dependencies:** A physical device, or a simulator session driven by an actual human at the keyboard.
+~~Verify emoji entry / custom ColorPicker end-to-end~~ — **done 2026-07-30, on a physical device.** Both work as expected: a real emoji typed via the system keyboard saves and renders correctly wherever a habit's icon is drawn; the 9th "Custom" swatch opens the native iOS color picker and an exact color applies correctly. No crashes or unexpected behavior. See `KNOWN_ISSUES.md` R6.
 
 ~~Re-check `ManageShieldsView` and the new Today quick-action stay in sync~~ — **done 2026-07-30.** Verified in a live simulator session: shielding today via the Today card's long-press quick-action correctly shows up in `ManageShieldsView`'s calendar and vice versa. See `KNOWN_ISSUES.md` R4.
 
