@@ -108,7 +108,7 @@ struct StreakService {
                 } else if completionService.isShielded(habit: habit, on: day) {
                     history.append(.shielded)
                 } else if completedCount == 0 {
-                    history.append(.missed)
+                    history.append(hasLoggedProgress(habit: habit, on: day) ? .partial : .missed)
                 } else {
                     history.append(.partial)
                 }
@@ -126,6 +126,12 @@ struct StreakService {
 
     private func isDue(habit: Habit, on date: Date) -> Bool {
         DueDateRule.isDue(frequency: habit.frequency, on: date, calendar: calendar)
+    }
+
+    /// True if any occurrence has a logged value below its completion threshold (e.g. a quantifiable
+    /// habit logged under target) — distinguishes "attempted but short" from "did nothing" in `dailyHistory`.
+    private func hasLoggedProgress(habit: Habit, on day: Date) -> Bool {
+        habit.occurrences.contains { completionService.value(occurrence: $0, on: day) > 0 }
     }
 
     private func completionCount(for habit: Habit, weekStarting weekStart: Date) -> Int {

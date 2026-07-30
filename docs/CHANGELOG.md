@@ -4,6 +4,16 @@ Grouped by milestone (matching real commits on `main`), not by conversation. New
 
 ---
 
+## Unreleased — Heatmap richness for below-target quantifiable days
+
+**Type:** Small polish fix, no new feature.
+
+- `StreakService.dailyHistory` now reports `.partial` (reusing the existing state and heatmap color) instead of `.missed` for a quantifiable habit logged below target on a due, unshielded day — distinguishing "attempted but short" from "did nothing." See `DECISIONS.md` ADR-015.
+- New `StreakServiceTests` cases: `dailyHistoryQuantifiablePartialToCompleted` (replaces the old `dailyHistoryQuantifiableMissedToCompleted`, updated to expect `.partial`), `dailyHistoryQuantifiableNothingLoggedIsMissed`.
+- Verified visually in the simulator: logging 3 of 8 on a quantifiable habit now renders today's heatmap cell distinctly from an unlogged day.
+
+---
+
 ## Unreleased — Unit label length cap
 
 **Type:** Small polish fix, no new feature.

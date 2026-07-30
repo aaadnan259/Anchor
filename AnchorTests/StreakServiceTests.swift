@@ -349,8 +349,8 @@ struct StreakServiceTests {
         #expect(streakService.currentStreak(for: habit, referenceDate: today) == 2)
     }
 
-    @Test("daily history transitions from missed to completed as a quantifiable day crosses target")
-    func dailyHistoryQuantifiableMissedToCompleted() throws {
+    @Test("daily history transitions from partial to completed as a quantifiable day crosses target")
+    func dailyHistoryQuantifiablePartialToCompleted() throws {
         let today = try date(2026, 7, 22)
         let (belowHabit, belowOccurrence) = makeQuantifiableHabit(target: 8, createdAt: today)
         let (atTargetHabit, atTargetOccurrence) = makeQuantifiableHabit(target: 8, createdAt: today)
@@ -359,7 +359,18 @@ struct StreakServiceTests {
         complete(belowOccurrence, habit: belowHabit, on: today, value: 5)
         complete(atTargetOccurrence, habit: atTargetHabit, on: today, value: 8)
 
-        #expect(streakService.dailyHistory(for: belowHabit, days: 1, referenceDate: today) == [.missed])
+        #expect(streakService.dailyHistory(for: belowHabit, days: 1, referenceDate: today) == [.partial])
         #expect(streakService.dailyHistory(for: atTargetHabit, days: 1, referenceDate: today) == [.completed])
+    }
+
+    @Test("daily history reports missed, not partial, for a quantifiable day with nothing logged at all")
+    func dailyHistoryQuantifiableNothingLoggedIsMissed() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, _) = makeQuantifiableHabit(target: 8, createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        let history = streakService.dailyHistory(for: habit, days: 1, referenceDate: today)
+
+        #expect(history == [.missed])
     }
 }
