@@ -372,9 +372,9 @@ Fields
 
 - id
 
-- habitID
+- habit (relationship, optional)
 
-- occurrenceID
+- occurrence (relationship, optional)
 
 - day
 
@@ -446,9 +446,13 @@ Create
 
 Edit
 
+Update an occurrence's schedule provider
+
 Archive
 
 Delete
+
+Duplicate
 
 Reorder
 

@@ -34,9 +34,9 @@ Anchor is a focused, beautifully designed habit tracker for iPhone. It is intent
 - AI features
 - Collaboration
 - Calendar view
-- Charts beyond simple progress
-- Themes
-- Export/Import
+- Themes (curated accent color + an exact custom color override are in scope; arbitrary app-wide visual themes are not)
+
+Note: this list reflects original v1 planning. Two items originally listed here — data export/import and charts beyond simple progress — were later scoped in and shipped (CSV/JSON export; the Habit Insights trend and time-of-day charts). See both features' entries under Screens below and `CHANGELOG.md`.
 
 ## Technology
 - SwiftUI
@@ -70,15 +70,15 @@ Habit
 
 Occurrence
 - id
-- habitId
+- habit (relationship, optional)
 - title
 - scheduleProvider
 - displayOrder
 
 Completion
 - id
-- habitId
-- occurrenceId (optional)
+- habit (relationship, optional)
+- occurrence (relationship, optional)
 - day
 - completedAt
 - value — logged amount, defaults to 1 for binary habits; compared against the habit's targetValue for quantifiable habits

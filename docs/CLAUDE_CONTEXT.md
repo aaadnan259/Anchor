@@ -48,7 +48,7 @@ README.md         Short project intro (root)
 project.yml       XcodeGen spec — the source of truth for the Xcode project
 ```
 
-**Models/** (10 files): `Habit`, `Occurrence`, `Completion`, `Shield` are `@Model` SwiftData classes. `Frequency`, `Weekday`, `AppAppearance`, `PrayerCalculationMethod`, `PrayerMadhab`, `PrayerName`, `ScheduleProviderKind` are plain `Codable` enums/structs, mostly stored as encoded `Data` on `Habit` (e.g. `frequency`) or as raw-value strings (e.g. `AccentColor`, defined in `Theme/`).
+**Models/** (11 files): `Habit`, `Occurrence`, `Completion`, `Shield` are `@Model` SwiftData classes. `Frequency`, `Weekday`, `AppAppearance`, `PrayerCalculationMethod`, `PrayerMadhab`, `PrayerName`, `ScheduleProviderKind` are plain `Codable` enums/structs, mostly stored as encoded `Data` on `Habit` (e.g. `frequency`) or as raw-value strings (e.g. `AccentColor`, defined in `Theme/`).
 
 **ViewModels/** (6 files): `TodayViewModel`, `HabitsViewModel`, `AddEditHabitViewModel`, `StatsViewModel`, `HabitInsightsViewModel`, `OnboardingViewModel`. Each is `@Observable @MainActor`, constructed fresh per-screen in a `.task` block (not injected via `@Environment` — only *Services* and `SettingsService`/`LocationService` are environment-injected, since those are genuinely shared/long-lived).
 
@@ -56,11 +56,11 @@ project.yml       XcodeGen spec — the source of truth for the Xcode project
 
 **Components/** (14 files): the reusable building blocks — `HabitCardView` (the Today/Habits list row, with expandable/quantifiable/binary/shielded branches), `HabitIconView` (renders SF Symbol or emoji from the same `icon: String`), `IconPickerView`, `AccentColorPickerView`, `ProgressRingView`, `CompletionToggleView`, `HabitHistoryGridView` (the heatmap), `TrendChartView`, `TimeOfDayChartView`, `WeeklyBarsView`, `OccurrenceRowView`, `PresetCardView`, `PrimaryButtonView`, `SectionHeaderView`.
 
-**Services/** (15 files): see `ARCHITECTURE.md`'s Services section for the full responsibility breakdown of each. Headline list: `HabitService`, `CompletionService`, `ScheduleService` (+ its `ScheduleProvider` strategies: `FixedTimeProvider`, `PrayerProvider`, `WeeklyProvider`, plus the shared `DueDateRule`), `PrayerService`, `LocationService`, `NotificationService`, `StreakService`, `InsightsService`, `ExportService`, `AuthenticationService`, `SettingsService`.
+**Services/** (16 files): see `ARCHITECTURE.md`'s Services section for the full responsibility breakdown of each. Headline list: `HabitService`, `CompletionService`, `ScheduleService` (+ the `ScheduleProvider` protocol and its strategies: `FixedTimeProvider`, `PrayerProvider`, `WeeklyProvider`, plus the shared `DueDateRule`), `PrayerService`, `LocationService`, `NotificationService`, `StreakService`, `InsightsService`, `ExportService`, `AuthenticationService`, `SettingsService`.
 
 **Theme/** (6 files): `Spacing` (4/8/12/16/24/32/48 scale), `CornerRadius` (12 small, 20 cards — always `.continuous`), `Surface` (background/card/border semantic colors), `Typography` (named `Font` extensions), `Motion` (named `Animation` presets — snappy/bouncy, with Reduce Motion fallbacks baked in at call sites), `AccentColor` (the curated 8-case enum).
 
-**AnchorTests/** (8 files): `StreakServiceTests.swift` is the largest and most important (40+ cases — streaks, shields, quantifiable thresholds, daily history). `InsightsServiceTests`, `ScheduleProviderTests`, `ExportServiceTests`, `ColorHexTests`, `StringIconTests` cover their respective services/extensions. `AnchorTests.swift` — despite the generic Xcode-scaffold name — actually contains the `DueDateRule` suite. `TestSupport.swift` holds shared fixtures (a fixed UTC `Calendar` for date-math determinism, an in-memory `ModelContext` factory).
+**AnchorTests/** (8 files): `StreakServiceTests.swift` is the largest and most important (20 cases — streaks, shields, quantifiable thresholds, daily history). `InsightsServiceTests`, `ScheduleProviderTests`, `ExportServiceTests`, `ColorHexTests`, `StringIconTests` cover their respective services/extensions. `AnchorTests.swift` — despite the generic Xcode-scaffold name — actually contains the `DueDateRule` suite. `TestSupport.swift` holds shared fixtures (a fixed UTC `Calendar` for date-math determinism, an in-memory `ModelContext` factory).
 
 ---
 
