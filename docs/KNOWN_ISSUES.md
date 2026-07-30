@@ -28,13 +28,7 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 
 ### 3. ~~Shield long-press context menu not verified end-to-end~~ — RESOLVED, see Resolved section (R4)
 
-### 4. Heatmap doesn't visually distinguish "shielded" from "below-target quantifiable" from "did nothing"
-
-- **Description:** `StreakService.dailyHistory`'s `.partial` state only fires for multi-occurrence "some but not all done" habits. A single-occurrence quantifiable habit logged below target renders as `.missed`, identical to a day with nothing logged at all. This was a deliberate, documented scope decision when quantifiable logging shipped, not an oversight — see `DECISIONS.md` ADR-010.
-- **Affected files:** `Anchor/Services/StreakService.swift`, `Anchor/Components/HabitHistoryGridView.swift`.
-- **Severity:** Cosmetic. Streak/completion correctness is unaffected — this is purely a display-richness gap.
-- **Status:** Open, tracked as a Low-priority `TODO.md` item, not a bug to fix reflexively.
-- **Priority:** Low.
+### 4. ~~Heatmap doesn't visually distinguish "shielded" from "below-target quantifiable" from "did nothing"~~ — RESOLVED, see Resolved section (R5)
 
 ---
 
@@ -67,6 +61,15 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 - **Result:** Long-pressing a Today habit card correctly reveals the "Shield Today" context menu item with a shield glyph; tapping it correctly shows a blue shield badge on the card, correctly shows the shielded day in blue in both the Today card and the Stats/Habit Insights heatmap, and correctly appears as a shielded day (with a working "Remove Shield" toggle) in `ManageShieldsView`'s calendar — confirming the Today quick-action and `ManageShieldsView` read/write the same state and stay in sync.
 - **Files:** `Anchor/Components/HabitCardView.swift`, `Anchor/ViewModels/TodayViewModel.swift`, `Anchor/Views/ManageShieldsView.swift`.
 - **Note:** the earlier non-response (previously logged as open issue #3) was traced to the *previous* session's tap coordinates, not app behavior — this session confirmed the tool's tap coordinate space is in points (402×874 on iPhone 16 Pro), not screenshot pixels; once corrected, taps and long-presses registered reliably throughout the app.
+
+### R5. Heatmap didn't visually distinguish "below-target quantifiable" from "did nothing" — fixed
+
+- **Found and fixed:** 2026-07-30.
+- **Root cause:** `StreakService.dailyHistory` only ever reported `.partial` when some (but not all) occurrences of a multi-occurrence habit were completed. A single-occurrence quantifiable habit logged below its target had `completedCount == 0` (since `isCompleted` is threshold-aware), so it fell into the same branch as a day with nothing logged at all — both rendered `.missed`.
+- **Fix:** `dailyHistory` now checks `CompletionService.value` when `completedCount == 0`; if any occurrence has a logged value greater than zero, it reports `.partial` instead of `.missed`. Reuses the existing `.partial` case and its existing heatmap color — no new `DayCompletionState` case or color was needed. See `DECISIONS.md` ADR-015 for why this was simpler than the alternatives originally anticipated in `TODO.md`.
+- **Verified:** unit tests (`StreakServiceTests.dailyHistoryQuantifiablePartialToCompleted`, `dailyHistoryQuantifiableNothingLoggedIsMissed`) and visually in the simulator — logging 3 of 8 on a quantifiable habit renders today's heatmap cell in the same medium tint as a multi-occurrence partial day, distinctly different from an unlogged day's near-invisible tint.
+- **Files:** `Anchor/Services/StreakService.swift`, `AnchorTests/StreakServiceTests.swift`.
+- **Note:** a shielded quantifiable day was never actually part of this gap — `isShielded` is checked before the `completedCount == 0` branch, so it already correctly reported `.shielded` regardless of logged value. The original `TODO.md`/`KNOWN_ISSUES.md` wording bundled it in by association, not because it was broken.
 
 ---
 

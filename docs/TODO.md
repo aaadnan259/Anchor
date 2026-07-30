@@ -25,10 +25,7 @@ None.
 
 ## Low
 
-### Heatmap display richness for shielded + below-target quantifiable days
-- **Why it's here:** `StreakService.dailyHistory`'s `.partial` state only fires for multi-occurrence "some but not all done" habits. A single-occurrence quantifiable habit logged below target, or a shielded quantifiable day, currently renders identically to `.missed`/`.shielded` without distinguishing "attempted but short" from "did nothing." Correctness is unaffected — this is purely a display gap, deliberately not fixed when quantifiable logging shipped (see `DECISIONS.md` ADR-010).
-- **Complexity:** Low-Medium — would need a new `DayCompletionState` case or a richer value on the existing ones, plus a new heatmap color, plus new `StreakServiceTests` cases.
-- **Dependencies:** None.
+~~Heatmap display richness for shielded + below-target quantifiable days~~ — **done 2026-07-30.** `StreakService.dailyHistory` now reports `.partial` (reusing the existing state/color, not a new one) for a due, unshielded, single-occurrence day with a logged value greater than zero but below target — distinguishing "attempted but short" from "did nothing." A shielded quantifiable day already correctly reported `.shielded` regardless of logged value (that part was never actually a gap — a shielded day is a shielded day irrespective of value). See `DECISIONS.md` ADR-015.
 
 ~~Unit label validation in Add/Edit~~ — **done 2026-07-30.** `AddEditHabitViewModel.unitLabel` now clamps to 24 characters via a `didSet`, preventing an absurdly long value. Emoji-blocking was considered and deliberately skipped — it would reject legitimate non-ASCII unit labels (accented characters, other scripts) for no real benefit, since a long value was the actual "something absurd" concern, not the character set.
 
@@ -66,8 +63,7 @@ Nothing currently flagged outstanding. VoiceOver labels, Dynamic Type, 44pt touc
 
 ## Testing
 
-### Add `StreakServiceTests` cases for the heatmap display-richness gap, if that gap is ever closed
-- See "Heatmap display richness" above — tracked together since the fix and its tests are the same unit of work.
+~~Add `StreakServiceTests` cases for the heatmap display-richness gap~~ — **done 2026-07-30**, alongside the fix itself. See `dailyHistoryQuantifiablePartialToCompleted` and `dailyHistoryQuantifiableNothingLoggedIsMissed` in `StreakServiceTests.swift`.
 
 ### Consider one `CompletionServiceTests.swift` if `CompletionService` ever grows non-trivial logic beyond threshold comparison
 - Currently it's exercised only indirectly. Revisit if it grows.

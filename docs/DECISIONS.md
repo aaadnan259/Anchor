@@ -4,6 +4,26 @@ Architectural Decision Record. One entry per non-obvious choice — not every li
 
 ---
 
+## ADR-015: Below-target quantifiable heatmap days reuse `.partial`, not a new `DayCompletionState` case
+
+**Date:** 2026-07-30
+
+**Problem:** `TODO.md`/`KNOWN_ISSUES.md` flagged that a quantifiable habit logged below target rendered identically to a day with nothing logged at all (both `.missed`), with no way to tell "attempted but short" from "did nothing" in the heatmap. The original backlog wording assumed closing this would need "a new `DayCompletionState` case or a richer value on the existing ones, plus a new heatmap color."
+
+**Options considered:**
+1. Reuse the existing `.partial` case — extend `dailyHistory`'s `completedCount == 0` branch to check `CompletionService.value`, and report `.partial` if it's greater than zero. No new enum case, no new heatmap color; `HabitHistoryGridView` needs zero changes.
+2. Add a new `DayCompletionState` case (e.g. `.attemptedBelowTarget`) with its own heatmap color.
+
+**Decision:** Option 1.
+
+**Reasoning:** `.partial` already means "attempted but not fully done" for multi-occurrence habits — extending that same meaning to "attempted but below target" for quantifiable (single-occurrence) habits is a coherent, not overloaded, use of the existing state. It closes the actual gap (distinguishing attempted-but-short from did-nothing) with a one-line change to `StreakService`, versus a new case touching the enum, the heatmap color function, and every switch statement over `DayCompletionState`.
+
+**Tradeoffs:** A multi-occurrence "some done" day and a quantifiable "some progress" day now render identically in the heatmap. Judged acceptable since both mean the same thing to a user glancing at the grid ("you did something, just not enough") and no habit is ever both multi-occurrence and quantifiable (ADR-010 scopes quantifiable to single-occurrence habits only), so the two meanings never collide on the same habit's history.
+
+**Also clarified during this work:** a shielded quantifiable day was never actually part of this gap — `CompletionService.isShielded` is already checked before the `completedCount == 0` branch in `dailyHistory`, so a shielded day correctly reports `.shielded` regardless of any logged value. The original backlog wording bundled "shielded" and "below-target" together; only the latter was a real gap.
+
+---
+
 ## ADR-014: Documentation restructured into `docs/`, with `CLAUDE.md` staying at root
 
 **Date:** 2026-07-29
