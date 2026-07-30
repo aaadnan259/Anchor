@@ -12,8 +12,8 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 - **Affected files:** `Anchor/Components/IconPickerView.swift`.
 - **Severity:** Low — the underlying logic (`String.isSFSymbolCompatible`, the `onChange` validation) is unit-tested (`AnchorTests/StringIconTests.swift`) and reasoned through carefully; this is a verification gap, not a suspected defect.
 - **Status:** Open, low priority (see `TODO.md`).
-- **Possible cause:** Not a code issue — the simulator-automation `text` action only supports printable ASCII, and `xcrun simctl pbcopy` corrupts UTF-8 input when used from the host shell to seed the simulator's pasteboard for a paste-based workaround.
-- **Possible solution:** Re-verify on a physical device (where a real keyboard is available), or in a simulator session driven by an actual human interacting with the keyboard.
+- **Possible cause:** Not a code issue. Re-attempted 2026-07-30 in a fresh session with correct point-space coordinates (ruling out the earlier session's coordinate-scaling risk): the Emoji segmented control and text field both work correctly (field focuses, cursor appears), but no on-screen software keyboard ever renders in this tool's simulator stream to switch to the emoji keyboard from — this looks like a headless/streamed simulator that doesn't surface a software keyboard at all, not merely a UTF-8/pasteboard issue. The `text` action confirmed it only accepts printable ASCII (an emoji was silently dropped). `xcrun simctl pbcopy` corrupting UTF-8 remains true but is now a secondary concern next to the missing on-screen keyboard.
+- **Possible solution:** Re-verify on a physical device (where a real keyboard is available), or in a simulator session driven by an actual human interacting with the keyboard, or with a tool that can render/drive the on-screen software keyboard.
 - **Priority:** Low.
 
 ### 2. Custom `ColorPicker` (`UIColorWell`) open-gesture not verified end-to-end
@@ -22,19 +22,11 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 - **Affected files:** `Anchor/Components/AccentColorPickerView.swift`.
 - **Severity:** Low — a genuine hit-testing bug *was* found and fixed during this investigation (a decorative overlay was blocking taps from reaching the control at all — see `DECISIONS.md`/`CHANGELOG.md`), which is good evidence the investigation was productive. What remains unconfirmed is only the very last step: does tapping the (now correctly hit-testable) control actually present iOS's system color sheet.
 - **Status:** Open, low priority.
-- **Possible cause:** `ColorPicker`/`UIColorWell` is known to have quirks with programmatic/synthetic touch injection in iOS Simulator automation more broadly — not unique to this environment or this code.
+- **Possible cause:** `ColorPicker`/`UIColorWell` is known to have quirks with programmatic/synthetic touch injection in iOS Simulator automation more broadly — not unique to this environment or this code. Re-attempted 2026-07-30 in a fresh session: confirmed the tap lands on the correct swatch (a regular curated swatch at the same row/coordinates *does* visibly select, moving the checkmark), isolating the gap specifically to `UIColorWell` not responding to synthetic taps/`touch_path`, not a coordinate-targeting mistake.
 - **Possible solution:** Re-verify on a physical device, or with a human at the keyboard in the simulator.
 - **Priority:** Low.
 
-### 3. Shield long-press context menu not verified end-to-end
-
-- **Description:** Long-pressing a Today habit card is supposed to reveal a "Shield Today"/"Remove Shield" context menu. Attempted with several `touch_path` hold durations (600ms, 900ms) without the menu appearing in screenshots. Basic taps on the same screen (the plain completion-toggle circle) also stopped responding during the same window, suggesting a broader tooling/connection issue rather than something specific to the context menu.
-- **Affected files:** `Anchor/Components/HabitCardView.swift`.
-- **Severity:** Low — the wiring (`isShielded`/`supportsShields`/`onToggleShield` params, the `.contextMenu` modifier, the `TodayViewModel` pass-throughs) is straightforward, code-reviewed, and follows an already-working pattern (`ManageShieldsView`'s toggle, which calls the same `CompletionService.toggleShield`).
-- **Status:** Open, low priority.
-- **Possible cause:** Same simulator-tooling instability as #1/#2, compounded by a period where basic tap responsiveness degraded across the whole app, not just this control.
-- **Possible solution:** Re-verify with a stable simulator session (re-attach, confirm basic taps work first) or on a physical device.
-- **Priority:** Low.
+### 3. ~~Shield long-press context menu not verified end-to-end~~ — RESOLVED, see Resolved section (R4)
 
 ### 4. Heatmap doesn't visually distinguish "shielded" from "below-target quantifiable" from "did nothing"
 
@@ -68,6 +60,13 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 - **Root cause:** `HabitService.seedStarterHabitsIfNeeded` (since deleted) called `HabitService.create()` directly, bypassing `AddEditHabitViewModel.save()` — the only code path that actually requests notification authorization and schedules.
 - **Fix:** onboarding routes all first-run habit creation through the same explicit flow real user-created habits use.
 - **Files:** `Anchor/Services/HabitService.swift`, `Anchor/ViewModels/OnboardingViewModel.swift`.
+
+### R4. Shield long-press context menu — verified end-to-end, no bug found
+
+- **Verified:** 2026-07-30, in a live simulator session (iPhone 16 Pro, iOS 18.5).
+- **Result:** Long-pressing a Today habit card correctly reveals the "Shield Today" context menu item with a shield glyph; tapping it correctly shows a blue shield badge on the card, correctly shows the shielded day in blue in both the Today card and the Stats/Habit Insights heatmap, and correctly appears as a shielded day (with a working "Remove Shield" toggle) in `ManageShieldsView`'s calendar — confirming the Today quick-action and `ManageShieldsView` read/write the same state and stay in sync.
+- **Files:** `Anchor/Components/HabitCardView.swift`, `Anchor/ViewModels/TodayViewModel.swift`, `Anchor/Views/ManageShieldsView.swift`.
+- **Note:** the earlier non-response (previously logged as open issue #3) was traced to the *previous* session's tap coordinates, not app behavior — this session confirmed the tool's tap coordinate space is in points (402×874 on iPhone 16 Pro), not screenshot pixels; once corrected, taps and long-presses registered reliably throughout the app.
 
 ---
 
