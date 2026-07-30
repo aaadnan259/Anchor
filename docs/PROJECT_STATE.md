@@ -20,35 +20,34 @@ Last updated: 2026-07-30, end of the "documentation audit + simulator verificati
 
 ---
 
-**Current branch:** `main` (only branch in use; no feature-branch workflow on this project).
+**Current branch:** `main` (only branch in use as a base; short-lived PR branches are created per change and deleted after merge — see the session-part narrative above for this session's five: `docs/audit-fixes-2026-07-30`, `docs/simulator-verification-2026-07-30`, `feature/unit-label-length-cap`, `feature/heatmap-partial-quantifiable`, `docs/physical-device-verification-2026-07-30`).
 
-**Current milestone:** None in progress. The full v1 feature set (`PROJECT_SPEC.md`) shipped as of commit `82e82bb`. This session's only work is generating the `docs/` knowledge base.
+**Current milestone:** None in progress. The full v1 feature set (`PROJECT_SPEC.md`) is complete, and — as of this session — so is every verification/polish item ever logged in `docs/TODO.md`/`docs/KNOWN_ISSUES.md`. No feature work is queued.
 
-**Current objective:** Documentation generation — creating/updating `CLAUDE.md`, `ARCHITECTURE.md`, `PROJECT_SPEC.md` (moved), and the new `CLAUDE_CONTEXT.md`, `PROJECT_STATE.md`, `DECISIONS.md`, `TODO.md`, `CHANGELOG.md`, `KNOWN_ISSUES.md`, `TESTING.md`, `DEVELOPMENT_GUIDE.md`, and root `README.md`.
+**Current objective:** None. This session's arc (documentation audit → simulator verification → two small fixes → physical-device verification) is finished. Waiting on the next user request.
 
-**Current task:** Writing the remaining `docs/` files, then a self-review pass, then commit and push.
+**Current task:** None in progress. **Check whether PR #5 (`docs/physical-device-verification-2026-07-30` → `main`) has been merged** before trusting anything below as reflecting `main` — run `git log origin/main --oneline -5` or `gh pr view 5`. If unmerged, the doc corrections in that PR (and this file's own "part 5" entry) exist on the PR branch, not yet on `main`.
 
-**Current files being edited:** All of the above; no application (`Anchor/`, `AnchorTests/`) code is touched this session.
+**Current files being edited:** None as of this snapshot — working tree is clean.
 
-**Recently modified (previous session, committed at `82e82bb`):**
-- `Anchor/Components/HabitIconView.swift` (new), `Anchor/Extensions/String+Icon.swift` (new) — emoji icon rendering
-- `Anchor/Components/AccentColorPickerView.swift`, `Anchor/Extensions/Color+Hex.swift`, `Anchor/Models/Habit.swift`, `Anchor/Services/SettingsService.swift` — custom accent color
-- `Anchor/Components/HabitCardView.swift`, `Anchor/ViewModels/TodayViewModel.swift`, `Anchor/Views/TodayView.swift` — quick shields
-- Six render call sites swapped to `HabitIconView`; every dynamic `.accentColor.color` swapped to `.tintColor`/`.effectiveAccentColor`
-- `AnchorTests/StringIconTests.swift`, `AnchorTests/ColorHexTests.swift` (new)
+**Recently modified, this session (2026-07-30), across 5 PRs — see the part 1–5 narrative above for full detail:**
+- `docs/*.md` — every doc file touched at least once (audit fixes, verification results, ADR-015, test-count corrections)
+- `Anchor/ViewModels/AddEditHabitViewModel.swift` — `unitLabel` 24-char clamp (PR #3)
+- `Anchor/Services/StreakService.swift`, `AnchorTests/StreakServiceTests.swift` — heatmap `.partial` reuse for below-target quantifiable days (PR #4)
+- No other application code touched this session.
 
-**Current bugs:** None known in application code. See `KNOWN_ISSUES.md` for interaction paths that couldn't be verified end-to-end due to simulator-automation tooling limitations (not known defects).
+**Current bugs:** None known in application code, and none open/unverified either. `KNOWN_ISSUES.md`'s Open section is empty as of 2026-07-30 — see its Resolved section (R1–R6) for the full history of everything ever logged there.
 
-**Next coding steps:** None queued. Next actual feature work should pull from `TODO.md`.
+**Next coding steps:** None queued. `docs/TODO.md` has nothing open in any priority tier. Next feature work should come from a new user request, not be picked up unprompted (see `CLAUDE.md`'s Scope Discipline) — `PROJECT_SPEC.md`'s version-gated roadmap (Calendar history v1.1, Widgets v1.2, iCloud Sync v1.3, Apple Watch v1.4) is explicitly "do not implement ahead of schedule."
 
-**Next testing steps:** None queued for application code. If picking up `TODO.md`'s "Verify emoji entry / ColorPicker / shield long-press end-to-end" item, that would need either a more stable simulator session or a physical device.
+**Next testing steps:** None queued. All interaction paths ever flagged as unverified (emoji entry, custom `ColorPicker`, shield long-press, `ManageShieldsView` sync) are now confirmed working — the first two on a physical device, the latter two in the simulator once tap coordinates were corrected.
 
-**Build status:** Last known good. `xcodebuild build` — zero warnings, `** BUILD SUCCEEDED **`. `xcodebuild test` — 46/46 tests passed. Both verified directly via `xcodebuild` (not through the simulator-automation tool, which was unreliable this session) immediately before the `82e82bb` commit.
+**Build status:** Last known good as of the heatmap-richness fix (PR #4, 2026-07-30, commit `5084e28`): `xcodebuild build` — zero warnings, `** BUILD SUCCEEDED **`. `xcodebuild test` — **47/47** tests passed (not 46 — a test was added in PR #4; see `TESTING.md`). Re-verify before trusting if picking up new work — this is a snapshot, not live CI.
 
-**Simulator status:** Unreliable as of the end of the last session — basic taps intermittently stopped registering across the whole app, `ColorPicker`/ `Toggle` needed workaround gestures, `simctl pbcopy` corrupts UTF-8. Re-attach and re-verify device boot state before trusting any simulator interaction in a fresh session; don't assume the instability persists, but don't assume it's resolved either.
+**Simulator status:** Reliable, once tap/swipe/long-press coordinates are correctly scaled to the tool's reported point space (402×874 on iPhone 16 Pro) rather than screenshot pixel dimensions — this was the root cause of what an earlier session logged as "basic taps stopped registering app-wide" (see session part 2 above). Two genuine tooling gaps remain in *this specific tool's* simulator stream, confirmed not to be app bugs by testing on a physical device instead: no on-screen software keyboard ever renders, and `UIColorWell` doesn't respond to synthetic taps. `Toggle` responds better to a `touch_path` drag than a plain tap.
 
 **Known blockers:** None for further development. TestFlight/App Store distribution is blocked on the user enrolling in the paid Apple Developer Program themselves (Claude cannot do this — see `CLAUDE_CONTEXT.md`'s Distribution constraints section).
 
-**Outstanding TODOs:** See `TODO.md`. Nothing critical or high-priority open; the interesting remaining items are the deferred backlog (cross-habit correlation insights) and version-gated roadmap (Calendar history v1.1, Widgets v1.2, iCloud Sync v1.3, Apple Watch v1.4).
+**Outstanding TODOs:** None. `docs/TODO.md` has nothing open in any priority tier as of 2026-07-30. The only remaining "future work" is either explicitly deferred (cross-habit correlation insights, unscoped) or explicitly version-gated (`PROJECT_SPEC.md`'s Future Roadmap: Calendar history v1.1, Widgets v1.2, iCloud Sync v1.3, Apple Watch v1.4) — not to be implemented ahead of schedule without the user asking.
 
-**Immediate next action:** Finish writing the remaining `docs/` files (`DECISIONS.md`, `TODO.md`, `CHANGELOG.md`, `KNOWN_ISSUES.md`, `TESTING.md`, `DEVELOPMENT_GUIDE.md`, root `README.md`), do a self-review pass for duplication/inconsistency, then commit and push as a single documentation commit.
+**Immediate next action:** Confirm PR #5 is merged (see "Current task" above). If it is, there is no queued work — wait for the next user request. If it isn't, merging it is the one loose end from this session.
