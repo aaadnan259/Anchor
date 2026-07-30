@@ -4,6 +4,15 @@ Grouped by milestone (matching real commits on `main`), not by conversation. New
 
 ---
 
+## Unreleased — Unit label length cap
+
+**Type:** Small polish fix, no new feature.
+
+- `AddEditHabitViewModel.unitLabel` now clamps to 24 characters via a `didSet`, closing the "Unit label validation" `TODO.md` item. Emoji-blocking was considered and deliberately skipped (see `TODO.md`).
+- No new tests — thin ViewModel glue, consistent with the established testing boundary (`TESTING.md`).
+
+---
+
 ## Unreleased — Documentation generation
 
 **Type:** Documentation only, no application code changed.

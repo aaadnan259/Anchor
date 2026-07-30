@@ -30,10 +30,7 @@ None.
 - **Complexity:** Low-Medium — would need a new `DayCompletionState` case or a richer value on the existing ones, plus a new heatmap color, plus new `StreakServiceTests` cases.
 - **Dependencies:** None.
 
-### Unit label validation in Add/Edit
-- **Why it's here:** `unitLabel` in `AddEditHabitViewModel` is free text with no length cap or emoji-blocking — a user could type something absurd. Not a bug, just unpolished.
-- **Complexity:** Trivial.
-- **Dependencies:** None.
+~~Unit label validation in Add/Edit~~ — **done 2026-07-30.** `AddEditHabitViewModel.unitLabel` now clamps to 24 characters via a `didSet`, preventing an absurdly long value. Emoji-blocking was considered and deliberately skipped — it would reject legitimate non-ASCII unit labels (accented characters, other scripts) for no real benefit, since a long value was the actual "something absurd" concern, not the character set.
 
 ## Future Ideas (from `PROJECT_SPEC.md`'s roadmap — do not implement ahead of schedule)
 
