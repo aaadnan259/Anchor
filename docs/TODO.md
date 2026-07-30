@@ -16,15 +16,12 @@ None.
 
 ## Medium
 
-### Verify emoji entry / custom ColorPicker / shield long-press end-to-end
-- **Why it's here:** these three interaction paths were implemented and code-reviewed carefully, and their surrounding UI was confirmed visually via screenshots, but the actual gesture (typing/pasting an emoji, opening the native `ColorPicker` sheet, long-pressing a Today card) could not be driven reliably through the simulator-automation tooling available last session. See `KNOWN_ISSUES.md`.
+### Verify emoji entry / custom ColorPicker end-to-end
+- **Why it's here:** these two interaction paths were implemented and code-reviewed carefully, and their surrounding UI was confirmed visually via screenshots, but the actual gesture (typing/pasting an emoji, opening the native `ColorPicker` sheet) still can't be driven through the simulator-automation tooling available in this environment. Re-attempted 2026-07-30 with correct tap coordinates and a clean simulator session — confirmed this is a genuine tooling gap (no on-screen software keyboard renders at all; `UIColorWell` doesn't respond to synthetic taps), not a flaky environment or a code issue. See `KNOWN_ISSUES.md` #1/#2.
 - **Complexity:** Low (no code change expected — this is a verification task, not a feature).
-- **Dependencies:** A working simulator session (basic taps need to be reliable first) or a physical device.
+- **Dependencies:** A physical device, or a simulator session driven by an actual human at the keyboard.
 
-### Re-check `ManageShieldsView` and the new Today quick-action stay in sync
-- **Why it's here:** both read/write the same `Shield` model through `CompletionService`, so they *should* always agree, but this specific cross-check (shield a day via one entry point, confirm it shows up via the other) wasn't completed interactively last session.
-- **Complexity:** Low.
-- **Dependencies:** Same as above.
+~~Re-check `ManageShieldsView` and the new Today quick-action stay in sync~~ — **done 2026-07-30.** Verified in a live simulator session: shielding today via the Today card's long-press quick-action correctly shows up in `ManageShieldsView`'s calendar and vice versa. See `KNOWN_ISSUES.md` R4.
 
 ## Low
 
