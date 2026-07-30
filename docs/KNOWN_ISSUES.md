@@ -6,25 +6,11 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 
 ## Open
 
-### 1. Emoji entry not verified end-to-end in a live simulator session
+None. All four items originally logged here have been verified end-to-end — see the Resolved section below. This section is kept as a template for future verification gaps; an item belongs here only while it's genuinely unconfirmed, not indefinitely.
 
-- **Description:** The emoji icon field (`IconPickerView`'s Emoji mode) was code-reviewed and its surrounding UI (segmented control, placeholder, footnote, paste-context-menu) was confirmed via screenshots, but actually typing/pasting a real emoji character and confirming it saves and renders correctly end-to-end was not completed.
-- **Affected files:** `Anchor/Components/IconPickerView.swift`.
-- **Severity:** Low — the underlying logic (`String.isSFSymbolCompatible`, the `onChange` validation) is unit-tested (`AnchorTests/StringIconTests.swift`) and reasoned through carefully; this is a verification gap, not a suspected defect.
-- **Status:** Open, low priority (see `TODO.md`).
-- **Possible cause:** Not a code issue. Re-attempted 2026-07-30 in a fresh session with correct point-space coordinates (ruling out the earlier session's coordinate-scaling risk): the Emoji segmented control and text field both work correctly (field focuses, cursor appears), but no on-screen software keyboard ever renders in this tool's simulator stream to switch to the emoji keyboard from — this looks like a headless/streamed simulator that doesn't surface a software keyboard at all, not merely a UTF-8/pasteboard issue. The `text` action confirmed it only accepts printable ASCII (an emoji was silently dropped). `xcrun simctl pbcopy` corrupting UTF-8 remains true but is now a secondary concern next to the missing on-screen keyboard.
-- **Possible solution:** Re-verify on a physical device (where a real keyboard is available), or in a simulator session driven by an actual human interacting with the keyboard, or with a tool that can render/drive the on-screen software keyboard.
-- **Priority:** Low.
+### 1. ~~Emoji entry not verified end-to-end~~ — RESOLVED, see Resolved section (R6)
 
-### 2. Custom `ColorPicker` (`UIColorWell`) open-gesture not verified end-to-end
-
-- **Description:** Tapping the 9th "Custom" swatch is supposed to open the native system color picker sheet. This was attempted repeatedly (plain tap, `touch_path` drag, long-press) at confirmed-correct coordinates without the sheet visibly opening in screenshots.
-- **Affected files:** `Anchor/Components/AccentColorPickerView.swift`.
-- **Severity:** Low — a genuine hit-testing bug *was* found and fixed during this investigation (a decorative overlay was blocking taps from reaching the control at all — see `DECISIONS.md`/`CHANGELOG.md`), which is good evidence the investigation was productive. What remains unconfirmed is only the very last step: does tapping the (now correctly hit-testable) control actually present iOS's system color sheet.
-- **Status:** Open, low priority.
-- **Possible cause:** `ColorPicker`/`UIColorWell` is known to have quirks with programmatic/synthetic touch injection in iOS Simulator automation more broadly — not unique to this environment or this code. Re-attempted 2026-07-30 in a fresh session: confirmed the tap lands on the correct swatch (a regular curated swatch at the same row/coordinates *does* visibly select, moving the checkmark), isolating the gap specifically to `UIColorWell` not responding to synthetic taps/`touch_path`, not a coordinate-targeting mistake.
-- **Possible solution:** Re-verify on a physical device, or with a human at the keyboard in the simulator.
-- **Priority:** Low.
+### 2. ~~Custom `ColorPicker` (`UIColorWell`) open-gesture not verified end-to-end~~ — RESOLVED, see Resolved section (R6)
 
 ### 3. ~~Shield long-press context menu not verified end-to-end~~ — RESOLVED, see Resolved section (R4)
 
@@ -70,6 +56,14 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 - **Verified:** unit tests (`StreakServiceTests.dailyHistoryQuantifiablePartialToCompleted`, `dailyHistoryQuantifiableNothingLoggedIsMissed`) and visually in the simulator — logging 3 of 8 on a quantifiable habit renders today's heatmap cell in the same medium tint as a multi-occurrence partial day, distinctly different from an unlogged day's near-invisible tint.
 - **Files:** `Anchor/Services/StreakService.swift`, `AnchorTests/StreakServiceTests.swift`.
 - **Note:** a shielded quantifiable day was never actually part of this gap — `isShielded` is checked before the `completedCount == 0` branch, so it already correctly reported `.shielded` regardless of logged value. The original `TODO.md`/`KNOWN_ISSUES.md` wording bundled it in by association, not because it was broken.
+
+### R6. Emoji entry and custom `ColorPicker` — verified end-to-end on a physical device, no bugs found
+
+- **Verified:** 2026-07-30, on the developer's own physical iPhone (iOS 26.6, `iPhone17,1`), installed via `xcodebuild`/`xcrun devicectl` (free "Personal Team" signing, one-time manual developer-profile trust via Settings → General → VPN & Device Management).
+- **Emoji entry result:** working as expected. `IconPickerView`'s Emoji mode field accepts a real emoji typed via the system emoji keyboard; the habit saves and the emoji renders correctly wherever the icon is drawn (Today, Habits, Stats). Confirms the simulator-only gap (`KNOWN_ISSUES.md`'s prior #1) was a tooling limitation (no on-screen software keyboard in that streamed environment), not an app defect.
+- **Custom `ColorPicker` result:** working as expected. Tapping the 9th "Custom" swatch opens the native iOS color picker sheet; picking an exact color applies it as the habit's (or app-wide) accent, taking priority over the curated `AccentColor` as designed. Confirms the simulator-only gap (prior #2) was `UIColorWell` not responding to synthetic taps in that environment, not an app defect.
+- **No crashes or unexpected behavior reported for either path.**
+- **Files:** `Anchor/Components/IconPickerView.swift`, `Anchor/Components/AccentColorPickerView.swift`.
 
 ---
 

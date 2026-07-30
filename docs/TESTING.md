@@ -70,7 +70,7 @@ These are things automated tests structurally can't cover, tracked here rather t
 
 - Actual biometric Face ID/Touch ID match — the simulator's biometric-match simulation (Features menu → Face ID → Matching/Non-matching) isn't drivable from this session's tooling.
 - Actual local notification firing with correct, fresh content at its scheduled time — no simulator tool available to fast-forward wall-clock time or trigger a specific pending notification on demand.
-- The two remaining interaction paths in `KNOWN_ISSUES.md` (emoji entry, `ColorPicker` opening) — not structurally unverifiable, just blocked on this tooling's lack of an on-screen software keyboard and `UIColorWell`'s lack of response to synthetic taps (confirmed 2026-07-30, see `KNOWN_ISSUES.md` #1/#2). Shield long-press was verified working end-to-end 2026-07-30 (`KNOWN_ISSUES.md` R4) — a physical device or a human at the keyboard is the likely path to closing out the other two.
+- Emoji entry and `ColorPicker` opening were blocked in this session's simulator tooling (no on-screen software keyboard; `UIColorWell` not responding to synthetic taps) but both were verified working end-to-end on a physical device on 2026-07-30, alongside shield long-press verified in the simulator the same day — see `KNOWN_ISSUES.md` R4/R6. Kept here as a reminder that this class of interaction (system keyboards, `UIColorWell`, and likely other UIKit-bridged controls) is a simulator-automation-tooling gap in this environment, not something to assume is broken without a real device or human check first.
 
 ## Simulator-Automation Tooling Quirks (environment notes, not app bugs)
 
