@@ -143,6 +143,21 @@ struct HabitInsightsView: View {
                 HabitHistoryGridView(days: viewModel.dailyHistory(for: habit), tint: habit.tintColor)
                     .padding(Spacing.base)
 
+                Divider().padding(.horizontal, Spacing.base)
+                NavigationLink {
+                    CalendarHistoryView(habit: habit, viewModel: viewModel)
+                } label: {
+                    HStack {
+                        Text("View Full Calendar")
+                            .font(.anchorBody)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "calendar")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(Spacing.base)
+
                 if habit.frequency.supportsShields {
                     Divider().padding(.horizontal, Spacing.base)
                     Button {

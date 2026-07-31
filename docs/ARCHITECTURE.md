@@ -502,7 +502,7 @@ Best streak
 
 Completion %
 
-Daily history (for the heatmap)
+Daily history (for the heatmap and the calendar history view — both consume the same `dayCompletionState`-derived data, one via the trailing-window `dailyHistory`, the other via a single-day `dayCompletionState` lookup for arbitrary calendar dates)
 
 Reads CompletionService.isCompleted/isFullyCompleted and CompletionService.isShielded — never re-implements either check.
 
@@ -594,11 +594,13 @@ Push navigation
 
 Stats → Habit Insights (tap a stat card)
 
+Habit Insights → Calendar History (tap "View Full Calendar" in the History section)
+
 Quick actions (no navigation, no new screen)
 
 Today: long-press a habit card → Shield Today / Remove Shield (Daily/Weekdays habits only)
 
-No deeper hierarchy than this. If a feature needs a third level of push navigation, reconsider whether it belongs in Anchor at all.
+Three levels deep (Stats → Habit Insights → Calendar History) as of Calendar History (v1.1) — a deliberate, considered exception to the previous two-level limit: Calendar History is a terminal leaf (nothing pushes from it) and a pure browse view of data Habit Insights already shows more compactly, not a new independent flow. If a feature needs a fourth level, or a third level that isn't a terminal leaf, reconsider whether it belongs in Anchor at all.
 
 ---
 
@@ -719,6 +721,8 @@ AccentColorPicker (8 curated swatches + 1 custom via native ColorPicker)
 SectionHeader
 
 PrimaryButton
+
+HabitHistoryGridView (dot-matrix heatmap) and CalendarHistoryGridView (month-grid calendar) — distinct presentations of the same `DayCompletionState` data, sharing one color mapping (`DayCompletionState.color(tint:)`) rather than each defining its own
 
 Do not duplicate UI.
 

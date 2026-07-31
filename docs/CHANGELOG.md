@@ -4,6 +4,20 @@ Grouped by milestone (matching real commits on `main`), not by conversation. New
 
 ---
 
+## Unreleased — Calendar History (v1.1)
+
+**Type:** New feature, shipped from `PROJECT_SPEC.md`'s Future Roadmap. WidgetKit (v1.2), requested alongside it, was explicitly dropped for this session — see `DECISIONS.md` ADR-017.
+
+- **`StreakService.dailyHistory`'s per-day branch extracted** into a private `dayState(for:on:today:habitStart:)` helper, reused by both the existing `dailyHistory` loop (behavior-preserving — all pre-existing `StreakServiceTests` cases pass unchanged) and a new public `dayCompletionState(for:on:referenceDate:)` single-day lookup, which adds a `day > today` guard so an unlogged future day reports `.notDue` instead of `.missed`. See `DECISIONS.md` ADR-016.
+- **New `Anchor/Components/CalendarHistoryGridView.swift`** — a month-grid calendar (weekday columns, day numbers, `Calendar.current.firstWeekday`-aware) distinct from the existing dot-matrix `HabitHistoryGridView` heatmap. Purely presentational — every cell's color comes from a `stateProvider` closure, never computed locally. Reuses the same `DayCompletionState` → `Color` mapping as the heatmap, now factored out into a shared `DayCompletionState.color(tint:)` extension (`Anchor/Extensions/DayCompletionState+Color.swift`) instead of being duplicated.
+- **New `Anchor/Views/CalendarHistoryView.swift`** — a dedicated screen (not a segmented-control toggle) with month navigation clamped between the habit's creation month and the current month, pushed via a new "View Full Calendar" `NavigationLink` in `HabitInsightsView`'s existing History section, alongside the heatmap and "Manage Shielded Days."
+- `HabitInsightsViewModel` gained one thin pass-through: `dayCompletionState(for:on:)`.
+- New `StreakServiceTests` cases: a cross-check that `dayCompletionState` agrees with `dailyHistory` for every day in a mixed-state range, the future-date `.notDue` fix, pre-creation-date `.notDue`, and confirmation that today-with-nothing-logged reports `.missed` (no inherited streak-continuity leniency).
+
+**Verification:** `xcodebuild build` — zero warnings. `xcodebuild test` — 51/51 passing (47 existing + 4 new). No `project.yml` changes — new Swift files only, picked up via `xcodegen generate` (a no-op regeneration of the unchanged config, not a config edit). Simulator visual verification could not be completed this session — the same app-wide tap-unresponsiveness pattern documented in `KNOWN_ISSUES.md`/`TESTING.md` recurred; worth a manual pass next session.
+
+---
+
 ## Unreleased — Today screen interaction and motion polish
 
 **Type:** UI polish, no new features or model changes.

@@ -373,4 +373,62 @@ struct StreakServiceTests {
 
         #expect(history == [.missed])
     }
+
+    @Test("day completion state agrees with daily history for every day in a mixed range")
+    func dayCompletionStateAgreesWithDailyHistory() throws {
+        let start = try date(2026, 7, 17)
+        let today = try #require(calendar.date(byAdding: .day, value: 4, to: start))
+        let (habit, first, second) = makeDailyHabitWithTwoOccurrences(createdAt: start)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        let day1 = try #require(calendar.date(byAdding: .day, value: 1, to: start))
+        let day2 = try #require(calendar.date(byAdding: .day, value: 2, to: start))
+
+        complete(first, habit: habit, on: start)
+        complete(second, habit: habit, on: start)
+        complete(first, habit: habit, on: day1)
+        shield(habit, on: day2)
+        // day3 and today (day4) are left with nothing logged.
+
+        let history = streakService.dailyHistory(for: habit, days: 5, referenceDate: today)
+
+        for offset in 0..<5 {
+            let day = try #require(calendar.date(byAdding: .day, value: offset, to: start))
+            #expect(streakService.dayCompletionState(for: habit, on: day, referenceDate: today) == history[offset])
+        }
+        #expect(history == [.completed, .partial, .shielded, .missed, .missed])
+    }
+
+    @Test("day completion state reports notDue for a date after the reference date")
+    func dayCompletionStateNotDueForFutureDate() throws {
+        let today = try date(2026, 7, 22)
+        let tomorrow = try #require(calendar.date(byAdding: .day, value: 1, to: today))
+        let (habit, _) = makeDailyHabit(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        // Without the future-date guard this would report .missed (daily habits are always "due"),
+        // which would render an unlogged future calendar day as already missed before it happens.
+        #expect(streakService.dayCompletionState(for: habit, on: tomorrow, referenceDate: today) == .notDue)
+    }
+
+    @Test("day completion state reports notDue for a date before the habit was created")
+    func dayCompletionStateNotDueBeforeHabitCreated() throws {
+        let today = try date(2026, 7, 22)
+        let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: today))
+        let (habit, _) = makeDailyHabit(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        #expect(streakService.dayCompletionState(for: habit, on: yesterday, referenceDate: today) == .notDue)
+    }
+
+    @Test("day completion state reports missed for today with nothing logged, without today-in-progress leniency")
+    func dayCompletionStateTodayNothingLoggedIsMissed() throws {
+        let today = try date(2026, 7, 22)
+        let (habit, _) = makeDailyHabit(createdAt: today)
+        let streakService = StreakService(completionService: CompletionService(context: try TestSupport.makeContext()))
+
+        // currentStreak() treats an in-progress today leniently (doesn't break the streak); dayCompletionState
+        // is a per-day rendering lookup and must not inherit that streak-continuity-specific leniency.
+        #expect(streakService.dayCompletionState(for: habit, on: today, referenceDate: today) == .missed)
+    }
 }

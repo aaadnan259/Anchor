@@ -164,6 +164,7 @@ Pushed from a Stats card (tap).
 - Trend chart (line): completion rate over Week (last 12 weeks), Month (last 12 months), or Year (last 5 years) — segmented picker
 - Time-of-day pattern: completions bucketed into Night/Morning/Afternoon/Evening, with a "usually completed in the ___" summary
 - History: the same completion grid shown on Stats, plus (Daily/Weekdays habits only) a "Manage Shielded Days" sheet — mark a day as exempt via a date picker so it doesn't break a streak, for vacation/illness, past or future. Shielded days render as a distinct color in the grid and don't count toward or break current/best streak. Not available for weekly-target habits. The same shield/unshield toggle is also available faster, for today specifically, via long-press on the habit's Today card.
+- "View Full Calendar" — pushes a dedicated Calendar History screen: a month-grid calendar (day numbers, not dots) of the same per-day completion states as the heatmap, with prev/next month navigation clamped between the habit's creation month and the current month.
 
 ### Settings
 Reached via gear icon on Today.
@@ -286,11 +287,10 @@ Quality
 
 ## Future Roadmap
 
-v1.1
-- Calendar history
+~~v1.1 — Calendar history~~ — shipped. See the Habit Insights screen's "View Full Calendar."
 
 v1.2
-- Widgets
+- Widgets — deferred pending a paid Apple Developer account. Sharing data with a widget extension needs an App Group, which requires explicit App ID registration in Apple's developer portal — unreliable on the free "Personal Team" signing this project currently uses, and risky to the existing physical-device builds. See `DECISIONS.md`.
 
 v1.3
 - iCloud Sync

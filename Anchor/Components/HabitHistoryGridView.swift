@@ -19,7 +19,7 @@ struct HabitHistoryGridView: View {
                 VStack(spacing: spacing) {
                     ForEach(Array(week.enumerated()), id: \.offset) { _, state in
                         RoundedRectangle(cornerRadius: 2, style: .continuous)
-                            .fill(color(for: state))
+                            .fill(state.color(tint: tint))
                             .frame(width: dotSize, height: dotSize)
                     }
                 }
@@ -34,16 +34,6 @@ struct HabitHistoryGridView: View {
         let completed = days.filter { $0 == .completed }.count
         let due = days.filter { $0 != .notDue }.count
         return due == 0 ? "No days due yet" : "\(completed) of \(due) days completed"
-    }
-
-    private func color(for state: DayCompletionState) -> Color {
-        switch state {
-        case .completed: tint
-        case .shielded: Color.blue.opacity(0.6)
-        case .partial: tint.opacity(0.45)
-        case .missed: tint.opacity(0.15)
-        case .notDue: Color.primary.opacity(0.08)
-        }
     }
 }
 

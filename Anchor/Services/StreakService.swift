@@ -99,20 +99,7 @@ struct StreakService {
         var history: [DayCompletionState] = []
         var day = rangeStart
         while day <= today {
-            if day < habitStart || !isDue(habit: habit, on: day) {
-                history.append(.notDue)
-            } else {
-                let completedCount = habit.occurrences.filter { completionService.isCompleted(occurrence: $0, on: day) }.count
-                if completedCount == habit.occurrences.count && completedCount > 0 {
-                    history.append(.completed)
-                } else if completionService.isShielded(habit: habit, on: day) {
-                    history.append(.shielded)
-                } else if completedCount == 0 {
-                    history.append(hasLoggedProgress(habit: habit, on: day) ? .partial : .missed)
-                } else {
-                    history.append(.partial)
-                }
-            }
+            history.append(dayState(for: habit, on: day, today: today, habitStart: habitStart))
             guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
             day = next
         }
@@ -122,6 +109,31 @@ struct StreakService {
     func dailyHistoryStartDate(days: Int = 112, referenceDate: Date = .now) -> Date {
         let today = calendar.startOfDay(for: referenceDate)
         return calendar.date(byAdding: .day, value: -(days - 1), to: today) ?? today
+    }
+
+    /// The completion state of a single, arbitrary day — unlike `dailyHistory`, `date` need not be within
+    /// a trailing window ending at `referenceDate` (e.g. a later day in a calendar month being browsed).
+    func dayCompletionState(for habit: Habit, on date: Date, referenceDate: Date = .now) -> DayCompletionState {
+        let today = calendar.startOfDay(for: referenceDate)
+        let habitStart = calendar.startOfDay(for: habit.createdAt)
+        return dayState(for: habit, on: calendar.startOfDay(for: date), today: today, habitStart: habitStart)
+    }
+
+    /// `day` must already be normalized to the start of its day (see call sites above).
+    private func dayState(for habit: Habit, on day: Date, today: Date, habitStart: Date) -> DayCompletionState {
+        if day > today || day < habitStart || !isDue(habit: habit, on: day) {
+            return .notDue
+        }
+        let completedCount = habit.occurrences.filter { completionService.isCompleted(occurrence: $0, on: day) }.count
+        if completedCount == habit.occurrences.count && completedCount > 0 {
+            return .completed
+        } else if completionService.isShielded(habit: habit, on: day) {
+            return .shielded
+        } else if completedCount == 0 {
+            return hasLoggedProgress(habit: habit, on: day) ? .partial : .missed
+        } else {
+            return .partial
+        }
     }
 
     private func isDue(habit: Habit, on date: Date) -> Bool {

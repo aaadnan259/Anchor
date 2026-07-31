@@ -27,6 +27,10 @@ final class HabitInsightsViewModel {
         streakService.dailyHistory(for: habit)
     }
 
+    func dayCompletionState(for habit: Habit, on date: Date) -> DayCompletionState {
+        streakService.dayCompletionState(for: habit, on: date)
+    }
+
     func isShielded(habit: Habit, on day: Date) -> Bool {
         completionService.isShielded(habit: habit, on: day)
     }

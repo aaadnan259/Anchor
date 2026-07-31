@@ -4,6 +4,42 @@ Architectural Decision Record. One entry per non-obvious choice — not every li
 
 ---
 
+## ADR-017: WidgetKit (v1.2) dropped for this session rather than risking free-account provisioning
+
+**Date:** 2026-07-31
+
+**Problem:** The user asked for both Calendar History (v1.1) and a Home Screen widget (v1.2) in the same session. Sharing data between the main app and a widget extension needs an App Group (`group.com.adnan.Anchor`), which requires Apple to register a new App ID capability. The user is on a free "Personal Team" account (no paid Apple Developer Program membership) — the same tier that already caused a real signing incident once before (ADR-003).
+
+**Options considered:**
+1. Implement the widget anyway: add the `AnchorWidgetExtension` target to `project.yml`, add the App Group entitlement to both targets, run `xcodegen generate`, and find out empirically whether free-account provisioning accepts it.
+2. Drop the widget for this session entirely — no `project.yml` changes, no extension target, no entitlements, no `WidgetSnapshot` — and keep it explicitly on the roadmap as blocked on a paid account, rather than just "not yet prioritized."
+
+**Decision:** Option 2, chosen by the user directly (not via `AskUserQuestion` — they specified this in their own revised instructions after seeing the researched risk).
+
+**Reasoning:** App Group provisioning failures on free accounts don't fail cleanly — they can leave a project's signing/provisioning in a broken state, which would jeopardize the existing, working physical-device build pipeline this project already depends on (per ADR-003, `CODE_SIGN_STYLE`/`DEVELOPMENT_TEAM` are explicitly protected for exactly this reason). Calendar History has no such dependency — it's pure additions to the existing `Anchor` target, zero `project.yml` risk — so it shipped this session while the widget didn't.
+
+**Tradeoffs:** The widget (a real, wanted feature) is fully deferred, not partially scaffolded — there's no half-built extension target sitting around unbuilt. Revisiting it requires a paid Apple Developer Program account; `CLAUDE_CONTEXT.md`'s Distribution constraints section already documents that Claude cannot enroll the user in this (payment info), so this is a genuine user-side blocker, not a scheduling choice.
+
+---
+
+## ADR-016: Calendar History's future-dated cells reuse `.notDue`, and `dayCompletionState`'s guard fixes a real bug the refactor would otherwise have introduced
+
+**Date:** 2026-07-31
+
+**Problem:** `StreakService.dailyHistory` only ever computes a trailing window of days ending at `referenceDate` (today) — its per-day branch never sees a future date. Calendar History needs a single-day lookup for arbitrary dates in a browsable month, including days later than today when the current month is displayed. Extracting `dailyHistory`'s per-day branch verbatim into a reusable helper, without change, would make an unlogged future day fall through to `hasLoggedProgress(...) ? .partial : .missed` — reporting a day as "missed" before it has happened.
+
+**Options considered:**
+1. Add an explicit `day > today` guard to the extracted per-day helper, returning `.notDue` for future dates — reusing the existing enum case.
+2. Add a new `DayCompletionState` case (e.g. `.future`) with its own color.
+
+**Decision:** Option 1.
+
+**Reasoning:** Same precedent as ADR-015 (reusing `.partial` for below-target quantifiable days rather than adding a case) — `.notDue`'s existing meaning ("nothing to show for this day yet") already covers "hasn't happened yet" just as well as "predates the habit," and `HabitHistoryGridView`'s existing faint-neutral color for `.notDue` is visually correct for both. No UI changes needed to support it.
+
+**Tradeoffs:** `.notDue` now covers two different reasons (before habit creation vs. after today) that happen to render identically — acceptable since a user glancing at a calendar has no need to distinguish "this habit didn't exist yet" from "this hasn't happened yet"; both mean "nothing to see here."
+
+---
+
 ## ADR-015: Below-target quantifiable heatmap days reuse `.partial`, not a new `DayCompletionState` case
 
 **Date:** 2026-07-30
