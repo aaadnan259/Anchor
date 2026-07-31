@@ -6,7 +6,15 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 
 ## Open
 
-None. All four items originally logged here have been verified end-to-end — see the Resolved section below. This section is kept as a template for future verification gaps; an item belongs here only while it's genuinely unconfirmed, not indefinitely.
+### 5. `HabitsView`'s "+" (Add Habit) toolbar button does not respond to synthetic taps in this tooling
+
+- **Description:** Every other tappable control tested this session (tab bar items, in-view `Button`s) responded to synthetic taps reliably, including immediately before and after this button was tried. `HabitsView`'s `ToolbarItem(placement: .topBarTrailing)` "+" button specifically did not open the Add Habit sheet across 10+ attempts: plain `tap`, `touch_path` (including a held press), fresh coordinate recalibration cross-checked against the tab bar's known-good positions, a full app restart (`simctl terminate`/`launch`), and a fresh simulator boot.
+- **Affected files:** `Anchor/Views/HabitsView.swift` (the button itself is trivial — a `Button { isPresentingAdd = true } label: { Image(systemName: "plus") }` inside a `ToolbarItem` — nothing about its code suggests an app-level cause).
+- **Severity:** Low as a suspected app defect (no code reason to believe it's broken — the equivalent `AddEditHabitView(habit: nil)` sheet is otherwise untouched and previously verified working). **High as a verification blocker**: this is the only entry point to create a habit at all, so while unresolved it blocks any simulator-based verification that needs at least one real habit to exist (Calendar History, Today-screen interactions, Stats, Habit Insights, etc.).
+- **Status:** Open.
+- **Possible cause:** Not diagnosed. `ToolbarItem`-hosted buttons render through UIKit's navigation-bar bridging rather than being plain in-tree SwiftUI views the way tab bar items and body-level `Button`s are — possibly relevant, but unconfirmed; the existing `UIColorWell`/on-screen-keyboard gaps (see #1/#2 below, now resolved) show this tool has other UIKit-bridging-specific gaps, so this may be another instance of the same category rather than something new.
+- **Possible solution:** Re-verify on a physical device (the same approach that closed out #1/#2), or in a simulator session driven by an actual human.
+- **Priority:** Medium — doesn't block shipping (the app itself is unaffected), but should be resolved or worked around before relying on this tooling for future simulator verification passes.
 
 ### 1. ~~Emoji entry not verified end-to-end~~ — RESOLVED, see Resolved section (R6)
 

@@ -2,7 +2,7 @@
 
 Prioritized backlog. This is the actionable, living companion to `PROJECT_SPEC.md`'s "Future Roadmap" and "Backlog" sections — those describe *what*, this describes *what to do about it and in what order*.
 
-There is currently nothing Critical, High, Medium, or Low priority open. The v1 feature set is complete and every backlog verification/polish item has been closed out (see the strikethrough entries below for what was done and when).
+One Medium item open (a verification blocker, not a known app defect) — see below. Nothing Critical, High, or Low.
 
 ---
 
@@ -16,6 +16,11 @@ None.
 
 ## Medium
 
+### Verify Calendar History (and the previous session's Today-screen interactions) end-to-end
+- **Why it's here:** `HabitsView`'s "+" (Add Habit) toolbar button stopped responding to synthetic taps in the simulator-automation tooling this session (10+ attempts, multiple techniques, a full app restart, and a fresh simulator boot all failed the same way, while every other control tested — tab bar, in-view buttons — worked normally). Since it's the only way to create a habit, it blocked verifying Calendar History (`Anchor/Views/CalendarHistoryView.swift`), and re-blocked the three items already carried over unverified from the previous session (full-card tap, swipe-to-delete, 100%-completion celebration). See `KNOWN_ISSUES.md` #5.
+- **Complexity:** Low (no code change expected — this is a verification task; nothing about the button's code suggests an app-level cause).
+- **Dependencies:** A physical device, or a simulator session driven by an actual human at the keyboard — the same resolution path that closed out the emoji-entry/`ColorPicker` gaps (`KNOWN_ISSUES.md` R6).
+
 ~~Verify emoji entry / custom ColorPicker end-to-end~~ — **done 2026-07-30, on a physical device.** Both work as expected: a real emoji typed via the system keyboard saves and renders correctly wherever a habit's icon is drawn; the 9th "Custom" swatch opens the native iOS color picker and an exact color applies correctly. No crashes or unexpected behavior. See `KNOWN_ISSUES.md` R6.
 
 ~~Re-check `ManageShieldsView` and the new Today quick-action stay in sync~~ — **done 2026-07-30.** Verified in a live simulator session: shielding today via the Today card's long-press quick-action correctly shows up in `ManageShieldsView`'s calendar and vice versa. See `KNOWN_ISSUES.md` R4.
@@ -28,8 +33,8 @@ None.
 
 ## Future Ideas (from `PROJECT_SPEC.md`'s roadmap — do not implement ahead of schedule)
 
-- **v1.1 — Calendar history.** A calendar-style view of past completions, distinct from the existing heatmap grid.
-- **v1.2 — Widgets.** Needs a new WidgetKit extension target — a genuine scope jump, deliberately deferred every time it's come up.
+- ~~v1.1 — Calendar history.~~ **Shipped 2026-07-31.** See `Anchor/Views/CalendarHistoryView.swift`, `CHANGELOG.md`.
+- **v1.2 — Widgets.** Needs a new WidgetKit extension target sharing data via an App Group — deferred pending a paid Apple Developer account (free "Personal Team" signing makes App Group provisioning unreliable and risks the existing physical-device build pipeline). See `DECISIONS.md` ADR-017. Paused at the user's explicit request as of 2026-07-31 — do not raise this again until they say they're ready.
 - **v1.3 — iCloud Sync.** Explicitly out of scope for v1 (no accounts, no cloud is a deliberate v1 promise per `PROJECT_SPEC.md`).
 - **v1.4 — Apple Watch.**
 
