@@ -2,7 +2,7 @@
 
 Prioritized backlog. This is the actionable, living companion to `PROJECT_SPEC.md`'s "Future Roadmap" and "Backlog" sections — those describe *what*, this describes *what to do about it and in what order*.
 
-One Medium item open (a verification blocker, not a known app defect) — see below. Nothing Critical, High, or Low.
+There is currently nothing Critical, High, Medium, or Low priority open.
 
 ---
 
@@ -16,10 +16,7 @@ None.
 
 ## Medium
 
-### Verify Calendar History (and the previous session's Today-screen interactions) end-to-end
-- **Why it's here:** `HabitsView`'s "+" (Add Habit) toolbar button stopped responding to synthetic taps in the simulator-automation tooling this session (10+ attempts, multiple techniques, a full app restart, and a fresh simulator boot all failed the same way, while every other control tested — tab bar, in-view buttons — worked normally). Since it's the only way to create a habit, it blocked verifying Calendar History (`Anchor/Views/CalendarHistoryView.swift`), and re-blocked the three items already carried over unverified from the previous session (full-card tap, swipe-to-delete, 100%-completion celebration). See `KNOWN_ISSUES.md` #5.
-- **Complexity:** Low (no code change expected — this is a verification task; nothing about the button's code suggests an app-level cause).
-- **Dependencies:** A physical device, or a simulator session driven by an actual human at the keyboard — the same resolution path that closed out the emoji-entry/`ColorPicker` gaps (`KNOWN_ISSUES.md` R6).
+~~Verify Calendar History (and the previous session's Today-screen interactions) end-to-end~~ — **done 2026-07-31, confirmed directly by the user.** Calendar History's month-grid view, the Today screen's full-card tap-to-complete, swipe-to-delete, and the 100%-completion celebration all work as expected, no bugs found. The simulator-automation gap that blocked automated verification (`HabitsView`'s "+" button not responding to synthetic taps) remains undiagnosed but is no longer a blocker for these features. See `KNOWN_ISSUES.md` R7.
 
 ~~Verify emoji entry / custom ColorPicker end-to-end~~ — **done 2026-07-30, on a physical device.** Both work as expected: a real emoji typed via the system keyboard saves and renders correctly wherever a habit's icon is drawn; the 9th "Custom" swatch opens the native iOS color picker and an exact color applies correctly. No crashes or unexpected behavior. See `KNOWN_ISSUES.md` R6.
 

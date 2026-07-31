@@ -14,7 +14,7 @@ Grouped by milestone (matching real commits on `main`), not by conversation. New
 - `HabitInsightsViewModel` gained one thin pass-through: `dayCompletionState(for:on:)`.
 - New `StreakServiceTests` cases: a cross-check that `dayCompletionState` agrees with `dailyHistory` for every day in a mixed-state range, the future-date `.notDue` fix, pre-creation-date `.notDue`, and confirmation that today-with-nothing-logged reports `.missed` (no inherited streak-continuity leniency).
 
-**Verification:** `xcodebuild build` — zero warnings. `xcodebuild test` — 51/51 passing (47 existing + 4 new). No `project.yml` changes — new Swift files only, picked up via `xcodegen generate` (a no-op regeneration of the unchanged config, not a config edit). Simulator visual verification could not be completed this session — the same app-wide tap-unresponsiveness pattern documented in `KNOWN_ISSUES.md`/`TESTING.md` recurred; worth a manual pass next session.
+**Verification:** `xcodebuild build` — zero warnings. `xcodebuild test` — 51/51 passing (47 existing + 4 new). No `project.yml` changes — new Swift files only, picked up via `xcodegen generate` (a no-op regeneration of the unchanged config, not a config edit). Simulator-automation verification was blocked by a tooling gap (`KNOWN_ISSUES.md` #5); confirmed working end-to-end by the user directly instead — see `KNOWN_ISSUES.md` R7.
 
 ---
 
@@ -29,7 +29,7 @@ Grouped by milestone (matching real commits on `main`), not by conversation. New
 - **Removed the Habits tab's `EditButton()`.** Reordering already works via long-press-drag without entering edit mode (standard SwiftUI `List`/`onMove` behavior since iOS 16), so the toolbar button was pure redundancy.
 - **Shields for Weekly Goal habits — considered, declined.** The request to make shields available for the Gym preset surfaced a real conflict with ADR-009 (shields are deliberately scoped to Daily/Weekdays habits only; a weekly-goal shield's semantics — free completion vs. reduced target — were never decided). Surfaced to the user via `AskUserQuestion`; they chose to leave the existing scoping as-is. No code change.
 
-**Verification:** `xcodebuild build` — zero warnings, `** BUILD SUCCEEDED **`. `xcodebuild test` — 47/47 passing. Simulator visual verification was partial: confirmed the Habits tab's Edit button is gone and the progress ring glow renders, but the simulator-automation tool hit the same app-wide tap-unresponsiveness pattern documented in `KNOWN_ISSUES.md`/`TESTING.md` partway through, blocking end-to-end confirmation of the full-card tap, swipe-to-delete, and the 100%-completion celebration. Not a code regression — see `KNOWN_ISSUES.md`.
+**Verification:** `xcodebuild build` — zero warnings, `** BUILD SUCCEEDED **`. `xcodebuild test` — 47/47 passing. Simulator-automation verification of the full-card tap, swipe-to-delete, and 100%-completion celebration was blocked across two sessions by a tooling gap (`KNOWN_ISSUES.md` #5); confirmed working end-to-end by the user directly instead — see `KNOWN_ISSUES.md` R7. The Edit-button removal and progress ring glow were already confirmed via simulator screenshots at the time.
 
 ---
 

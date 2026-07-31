@@ -6,15 +6,9 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 
 ## Open
 
-### 5. `HabitsView`'s "+" (Add Habit) toolbar button does not respond to synthetic taps in this tooling
+None. Every item logged here has been verified end-to-end — see the Resolved section below.
 
-- **Description:** Every other tappable control tested this session (tab bar items, in-view `Button`s) responded to synthetic taps reliably, including immediately before and after this button was tried. `HabitsView`'s `ToolbarItem(placement: .topBarTrailing)` "+" button specifically did not open the Add Habit sheet across 10+ attempts: plain `tap`, `touch_path` (including a held press), fresh coordinate recalibration cross-checked against the tab bar's known-good positions, a full app restart (`simctl terminate`/`launch`), and a fresh simulator boot.
-- **Affected files:** `Anchor/Views/HabitsView.swift` (the button itself is trivial — a `Button { isPresentingAdd = true } label: { Image(systemName: "plus") }` inside a `ToolbarItem` — nothing about its code suggests an app-level cause).
-- **Severity:** Low as a suspected app defect (no code reason to believe it's broken — the equivalent `AddEditHabitView(habit: nil)` sheet is otherwise untouched and previously verified working). **High as a verification blocker**: this is the only entry point to create a habit at all, so while unresolved it blocks any simulator-based verification that needs at least one real habit to exist (Calendar History, Today-screen interactions, Stats, Habit Insights, etc.).
-- **Status:** Open.
-- **Possible cause:** Not diagnosed. `ToolbarItem`-hosted buttons render through UIKit's navigation-bar bridging rather than being plain in-tree SwiftUI views the way tab bar items and body-level `Button`s are — possibly relevant, but unconfirmed; the existing `UIColorWell`/on-screen-keyboard gaps (see #1/#2 below, now resolved) show this tool has other UIKit-bridging-specific gaps, so this may be another instance of the same category rather than something new.
-- **Possible solution:** Re-verify on a physical device (the same approach that closed out #1/#2), or in a simulator session driven by an actual human.
-- **Priority:** Medium — doesn't block shipping (the app itself is unaffected), but should be resolved or worked around before relying on this tooling for future simulator verification passes.
+### 5. ~~`HabitsView`'s "+" (Add Habit) toolbar button does not respond to synthetic taps in this tooling~~ — verification blocker resolved via direct user testing, see Resolved section (R7). The underlying automation-tool gap itself (why the button doesn't respond to synthetic taps) was never diagnosed — it just stopped being a blocker once the user tested directly. Could resurface in a future simulator-driven session.
 
 ### 1. ~~Emoji entry not verified end-to-end~~ — RESOLVED, see Resolved section (R6)
 
@@ -72,6 +66,13 @@ Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and
 - **Custom `ColorPicker` result:** working as expected. Tapping the 9th "Custom" swatch opens the native iOS color picker sheet; picking an exact color applies it as the habit's (or app-wide) accent, taking priority over the curated `AccentColor` as designed. Confirms the simulator-only gap (prior #2) was `UIColorWell` not responding to synthetic taps in that environment, not an app defect.
 - **No crashes or unexpected behavior reported for either path.**
 - **Files:** `Anchor/Components/IconPickerView.swift`, `Anchor/Components/AccentColorPickerView.swift`.
+
+### R7. Calendar History and the Today-screen interaction/motion polish — user-confirmed working, no bugs found
+
+- **Verified:** 2026-07-31, directly by the user on a real device/build, outside the simulator-automation tooling (which was blocked by #5's "+" button gap for this entire round of features).
+- **Result:** Confirmed working — Calendar History's month-grid view (via "View Full Calendar" in Habit Insights), the Today screen's full-card tap-to-complete, swipe-to-delete, and the 100%-completion celebration animation. No bugs reported.
+- **Note:** This closes out the verification *need* for these features. It does not diagnose or fix #5's underlying automation-tool gap itself — that remains unexplained and could resurface next time this tooling is used to drive the app.
+- **Files:** `Anchor/Views/CalendarHistoryView.swift`, `Anchor/Components/CalendarHistoryGridView.swift`, `Anchor/Components/HabitCardView.swift`, `Anchor/Views/TodayView.swift`, `Anchor/Components/CompletionCelebrationView.swift`, `Anchor/Components/ProgressRingView.swift`.
 
 ---
 
