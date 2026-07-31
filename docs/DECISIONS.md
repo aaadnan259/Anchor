@@ -137,6 +137,8 @@ Architectural Decision Record. One entry per non-obvious choice — not every li
 
 **Tradeoffs:** `StreakService.dailyHistory`'s `.partial` state (for multi-occurrence "some but not all done") and a below-target quantifiable day both currently render identically to `.missed` in the heatmap — a minor display-richness gap, not a correctness bug, deliberately not fixed in the same pass.
 
+**Reconfirmed 2026-07-31:** a request to make Shields available for the "Gym" preset (which defaults to `.timesPerWeek`) surfaced this exact exclusion again. Rather than silently extending shield semantics to weekly-goal habits, the conflict with this ADR was surfaced to the user via `AskUserQuestion` — options were "invent the missing semantics and extend shields," "make Gym itself shieldable by changing its default frequency instead," or "leave as-is." The user chose to leave the existing scoping untouched. No code changed.
+
 ---
 
 ## ADR-008: `AccentColor` is a curated, closed 8-case enum — not an open color picker (first pass)

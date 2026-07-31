@@ -4,6 +4,21 @@ Grouped by milestone (matching real commits on `main`), not by conversation. New
 
 ---
 
+## Unreleased — Today screen interaction and motion polish
+
+**Type:** UI polish, no new features or model changes.
+
+- **Completion celebration.** New `CompletionCelebrationView` plays a brief checkmark-seal burst + success haptic over the header's progress ring the moment daily progress crosses into 100% (0→1 transition only, not on every render or app reopen). Respects Reduce Motion (shows the checkmark without the motion).
+- **Progress ring glow.** `ProgressRingView` gained an opt-in `pulseGlow` parameter — a soft, blurred duplicate of the filled arc that pulses via `repeatForever`. Enabled only for Today's header ring (the small per-habit/expand/log rings are unaffected). Falls back to a static (non-animated) glow under Reduce Motion.
+- **Full-card tap target.** `HabitCardView`'s whole body is now a `Button` whose action mirrors the card's existing primary control (toggle for binary habits, log-value sheet for quantifiable habits, expand/collapse for multi-occurrence habits). The dedicated inner controls still work exactly as before when tapped directly; the card just no longer requires precision-tapping a small control.
+- **Swipe-to-delete on Today.** `TodayView`'s habit list is now a `List` (previously a plain `ScrollView`/`VStack`, which can't host `.swipeActions`) so a trailing-edge swipe reveals Delete, matching `HabitsView`'s existing pattern. `TodayViewModel` gained a `delete(_:)` method (new `habitService`/`notificationService`/`smartRemindersEnabled` dependencies, mirroring `HabitsViewModel`'s existing delete-then-reschedule shape).
+- **Removed the Habits tab's `EditButton()`.** Reordering already works via long-press-drag without entering edit mode (standard SwiftUI `List`/`onMove` behavior since iOS 16), so the toolbar button was pure redundancy.
+- **Shields for Weekly Goal habits — considered, declined.** The request to make shields available for the Gym preset surfaced a real conflict with ADR-009 (shields are deliberately scoped to Daily/Weekdays habits only; a weekly-goal shield's semantics — free completion vs. reduced target — were never decided). Surfaced to the user via `AskUserQuestion`; they chose to leave the existing scoping as-is. No code change.
+
+**Verification:** `xcodebuild build` — zero warnings, `** BUILD SUCCEEDED **`. `xcodebuild test` — 47/47 passing. Simulator visual verification was partial: confirmed the Habits tab's Edit button is gone and the progress ring glow renders, but the simulator-automation tool hit the same app-wide tap-unresponsiveness pattern documented in `KNOWN_ISSUES.md`/`TESTING.md` partway through, blocking end-to-end confirmation of the full-card tap, swipe-to-delete, and the 100%-completion celebration. Not a code regression — see `KNOWN_ISSUES.md`.
+
+---
+
 ## Unreleased — Heatmap richness for below-target quantifiable days
 
 **Type:** Small polish fix, no new feature.

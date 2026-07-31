@@ -118,11 +118,12 @@ Shown once, before Today/Habits/Stats, gated by `hasCompletedOnboarding`.
 
 ### Today
 - Date
-- Daily progress ring
+- Daily progress ring, with a soft pulsing glow and a brief celebration animation the moment it reaches 100%
 - Due habits
 - Expandable occurrences
-- One-tap completion
+- One-tap completion — tapping anywhere on a habit card performs its primary action (toggle for binary habits, open the log-value sheet for quantifiable habits, expand/collapse for multi-occurrence habits), not just its small dedicated control
 - Quantifiable habits show a fill ring instead of a checkmark; tapping opens a stepper sheet to log today's value
+- Swipe left on a habit card to delete the habit
 - Long-press a habit card (Daily/Weekdays habits only) for a "Shield Today" quick action — a blue shield badge shows once active
 - Smooth animations
 - Haptics

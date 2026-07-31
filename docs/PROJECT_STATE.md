@@ -2,7 +2,9 @@
 
 Lightweight, session-to-session snapshot. This is the file most likely to be stale — trust it less than `git log`/`git status` for anything it claims about code, and re-verify before acting on it. Update this file at the end of every work session.
 
-Last updated: 2026-07-30, end of the "documentation audit + simulator verification + TODO backlog cleanup + physical-device verification" session.
+Last updated: 2026-07-31, end of the "Today screen interaction and motion polish" session.
+
+**2026-07-31 session — Today screen interaction and motion polish:** Implemented five requested tweaks. (1) Completion celebration: new `Anchor/Components/CompletionCelebrationView.swift`, shown over the header ring on the 0→1 progress transition (`TodayView.swift`), Reduce Motion-aware. (2) Progress ring glow: `ProgressRingView.swift` gained an opt-in `pulseGlow` param, enabled only for Today's header ring. (3) Full-card tap target: `HabitCardView.swift`'s body is now a `Button` wrapping the existing card content, whose action mirrors the card's existing primary control — nested inner controls (checkmark, log ring, expand chevron) still work standalone. (4) Swipe-to-delete: `TodayView.swift`'s habit list changed from `ScrollView`/`VStack` to `List` (required for `.swipeActions`, mirroring `HabitsView`'s pattern); `TodayViewModel.swift` gained `delete(_:)` plus `habitService`/`notificationService`/`smartRemindersEnabled` dependencies. (5) Removed `HabitsView.swift`'s redundant `EditButton()` — reordering already works via long-press-drag without edit mode. A sixth request (extend Shields to weekly-goal habits, i.e. the Gym preset) conflicted with the deliberate ADR-009 scoping; surfaced to the user via `AskUserQuestion`, who chose to leave it as-is (see `DECISIONS.md` ADR-009's 2026-07-31 addendum) — no code change for that item. `xcodegen generate` was re-run once (new `CompletionCelebrationView.swift` file needed picking up by the folder-globbed project). Verified: `xcodebuild build` zero warnings, `xcodebuild test` 47/47 passing. Simulator verification was partial — confirmed the Edit button is gone and the ring glow renders, but the simulator-automation tool hit the same app-wide tap-unresponsiveness pattern documented below (part 2) partway through, this time *despite* using correct point-space coordinates throughout — so the part-2 coordinate-scaling theory doesn't fully explain it either. Could not confirm the full-card tap, swipe-to-delete, or the 100%-completion celebration end-to-end as a result; worth re-attempting next session with a fresh simulator boot. Committed directly to `main` at the user's explicit request (no PR branch this time).
 
 **2026-07-30 session, part 5 — physical-device verification, TODO/KNOWN_ISSUES now fully clean:** Built and installed the app on the developer's own physical iPhone (`xcodebuild -destination 'id=<UDID>' -allowProvisioningUpdates` + `xcrun devicectl device install/launch`) to close out the last two open verification items, which needed a physical device or human tester rather than a code change. Hit and resolved the standard first-install "profile has not been explicitly trusted by the user" error via the one-time manual trust step (Settings → General → VPN & Device Management). User confirmed both emoji habit-icon entry and the custom `ColorPicker` swatch work as expected with no crashes. `docs/TODO.md` and `docs/KNOWN_ISSUES.md` now have nothing open — every item logged across this documentation pass and the sessions since has been verified, fixed, or explicitly deferred to a version-gated future roadmap item. Also documented a real gotcha in `docs/DEVELOPMENT_GUIDE.md`: `xcrun xctrace list devices` and `xcrun devicectl list devices` report different identifier strings for the same physical device, and mixing them up produces a misleading "device not found" error.
 
@@ -22,32 +24,41 @@ Last updated: 2026-07-30, end of the "documentation audit + simulator verificati
 
 **Current branch:** `main` (only branch in use as a base; short-lived PR branches are created per change and deleted after merge — see the session-part narrative above for this session's five: `docs/audit-fixes-2026-07-30`, `docs/simulator-verification-2026-07-30`, `feature/unit-label-length-cap`, `feature/heatmap-partial-quantifiable`, `docs/physical-device-verification-2026-07-30`).
 
-**Current milestone:** None in progress. The full v1 feature set (`PROJECT_SPEC.md`) is complete, and — as of this session — so is every verification/polish item ever logged in `docs/TODO.md`/`docs/KNOWN_ISSUES.md`. No feature work is queued.
+**Current milestone:** None in progress. The full v1 feature set (`PROJECT_SPEC.md`) is complete, every verification/polish item ever logged in `docs/TODO.md`/`docs/KNOWN_ISSUES.md` was closed as of the 2026-07-30 sessions, and this session's Today-screen interaction/motion polish (2026-07-31) is implemented and built/tested on top of that. No feature work is queued.
 
-**Current objective:** None. This session's arc (documentation audit → simulator verification → two small fixes → physical-device verification) is finished. Waiting on the next user request.
+**Current objective:** None queued — the five requested polish items are implemented (one, Shields-for-weekly-goal-habits, was explicitly declined by the user rather than implemented).
 
-**Current task:** None in progress. **Check whether PR #5 (`docs/physical-device-verification-2026-07-30` → `main`) has been merged** before trusting anything below as reflecting `main` — run `git log origin/main --oneline -5` or `gh pr view 5`. If unmerged, the doc corrections in that PR (and this file's own "part 5" entry) exist on the PR branch, not yet on `main`.
+**Current task:** None in progress. This session's changes were committed directly to `main` at the user's explicit request.
 
-**Current files being edited:** None as of this snapshot — working tree is clean.
+**Current files being edited:** None — working tree is clean.
 
-**Recently modified, this session (2026-07-30), across 5 PRs — see the part 1–5 narrative above for full detail:**
+**Recently modified, this session (2026-07-31, committed directly to `main`):**
+- `Anchor/Components/CompletionCelebrationView.swift` (new) — 100%-completion celebration burst
+- `Anchor/Components/ProgressRingView.swift` — `pulseGlow` param
+- `Anchor/Components/HabitCardView.swift` — whole card is now a `Button` with a primary tap action
+- `Anchor/Views/TodayView.swift` — header/celebration wiring, `ScrollView`/`VStack` → `List` for swipe-to-delete
+- `Anchor/ViewModels/TodayViewModel.swift` — new `delete(_:)`, new `habitService`/`notificationService`/`smartRemindersEnabled` dependencies
+- `Anchor/Views/HabitsView.swift` — removed `EditButton()`
+- `Anchor.xcodeproj` regenerated via `xcodegen generate` (picks up the new `CompletionCelebrationView.swift` file; no `project.yml` changes)
+- Docs: `PROJECT_SPEC.md` (Today section), `DECISIONS.md` (ADR-009 addendum), `CHANGELOG.md`, this file
+
+**Recently modified, previous session (2026-07-30), across 5 PRs already on `main` — see the part 1–5 narrative above for full detail:**
 - `docs/*.md` — every doc file touched at least once (audit fixes, verification results, ADR-015, test-count corrections)
 - `Anchor/ViewModels/AddEditHabitViewModel.swift` — `unitLabel` 24-char clamp (PR #3)
 - `Anchor/Services/StreakService.swift`, `AnchorTests/StreakServiceTests.swift` — heatmap `.partial` reuse for below-target quantifiable days (PR #4)
-- No other application code touched this session.
 
-**Current bugs:** None known in application code, and none open/unverified either. `KNOWN_ISSUES.md`'s Open section is empty as of 2026-07-30 — see its Resolved section (R1–R6) for the full history of everything ever logged there.
+**Current bugs:** None known in application code. `KNOWN_ISSUES.md`'s Open section was empty as of 2026-07-30 (see its Resolved section R1–R6) — this session's full-card tap, swipe-to-delete, and completion-celebration additions are unverified end-to-end in the simulator (tooling flakiness, see above), the same "unverified but not suspected broken" bucket as past entries there.
 
 **Next coding steps:** None queued. `docs/TODO.md` has nothing open in any priority tier. Next feature work should come from a new user request, not be picked up unprompted (see `CLAUDE.md`'s Scope Discipline) — `PROJECT_SPEC.md`'s version-gated roadmap (Calendar history v1.1, Widgets v1.2, iCloud Sync v1.3, Apple Watch v1.4) is explicitly "do not implement ahead of schedule."
 
-**Next testing steps:** None queued. All interaction paths ever flagged as unverified (emoji entry, custom `ColorPicker`, shield long-press, `ManageShieldsView` sync) are now confirmed working — the first two on a physical device, the latter two in the simulator once tap coordinates were corrected.
+**Next testing steps:** Re-attempt simulator verification of this session's three unconfirmed interactions (full-card tap, swipe-to-delete, 100%-completion celebration) with a fresh simulator boot. Everything flagged as unverified before this session (emoji entry, custom `ColorPicker`, shield long-press, `ManageShieldsView` sync) is already confirmed working — the first two on a physical device, the latter two in the simulator.
 
-**Build status:** Last known good as of the heatmap-richness fix (PR #4, 2026-07-30, commit `5084e28`): `xcodebuild build` — zero warnings, `** BUILD SUCCEEDED **`. `xcodebuild test` — **47/47** tests passed (not 46 — a test was added in PR #4; see `TESTING.md`). Re-verify before trusting if picking up new work — this is a snapshot, not live CI.
+**Build status:** Last known good, from this session (2026-07-31). `xcodebuild build` — zero warnings, `** BUILD SUCCEEDED **`. `xcodebuild test` — 47/47 tests passed. Both verified directly via `xcodebuild`. Re-verify before trusting if picking up new work — this is a snapshot, not live CI.
 
-**Simulator status:** Reliable, once tap/swipe/long-press coordinates are correctly scaled to the tool's reported point space (402×874 on iPhone 16 Pro) rather than screenshot pixel dimensions — this was the root cause of what an earlier session logged as "basic taps stopped registering app-wide" (see session part 2 above). Two genuine tooling gaps remain in *this specific tool's* simulator stream, confirmed not to be app bugs by testing on a physical device instead: no on-screen software keyboard ever renders, and `UIColorWell` doesn't respond to synthetic taps. `Toggle` responds better to a `touch_path` drag than a plain tap.
+**Simulator status:** Unreliable again this session — basic taps stopped registering app-wide for stretches, the same symptom logged in earlier sessions (see `KNOWN_ISSUES.md`/session part 2 above), and this time it happened *despite* using correct point-space coordinates throughout, so the "it was just a coordinate-scaling mistake" explanation from part 2 doesn't fully hold up as the sole cause. Two other tooling gaps remain, confirmed not to be app bugs by testing on a physical device instead: no on-screen software keyboard ever renders, and `UIColorWell` doesn't respond to synthetic taps. Re-attach and re-verify device boot state before trusting any simulator interaction in a fresh session; don't assume the instability persists, but don't assume it's resolved either.
 
 **Known blockers:** None for further development. TestFlight/App Store distribution is blocked on the user enrolling in the paid Apple Developer Program themselves (Claude cannot do this — see `CLAUDE_CONTEXT.md`'s Distribution constraints section).
 
 **Outstanding TODOs:** None. `docs/TODO.md` has nothing open in any priority tier as of 2026-07-30. The only remaining "future work" is either explicitly deferred (cross-habit correlation insights, unscoped) or explicitly version-gated (`PROJECT_SPEC.md`'s Future Roadmap: Calendar history v1.1, Widgets v1.2, iCloud Sync v1.3, Apple Watch v1.4) — not to be implemented ahead of schedule without the user asking.
 
-**Immediate next action:** Confirm PR #5 is merged (see "Current task" above). If it is, there is no queued work — wait for the next user request. If it isn't, merging it is the one loose end from this session.
+**Immediate next action:** None queued — this session's changes are committed on `main`. Re-verify the three unconfirmed interactions (full-card tap, swipe-to-delete, 100%-completion celebration) in the simulator when it's next stable.

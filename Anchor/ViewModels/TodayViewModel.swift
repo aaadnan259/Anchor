@@ -3,22 +3,31 @@ import Foundation
 @Observable
 @MainActor
 final class TodayViewModel {
+    private let habitService: HabitService
     private let scheduleService: ScheduleService
     private let completionService: CompletionService
     private let streakService: StreakService
+    private let notificationService: NotificationService
+    private let smartRemindersEnabled: Bool
     private let calendar: Calendar
 
     var expandedHabitIDs: Set<UUID> = []
 
     init(
+        habitService: HabitService,
         scheduleService: ScheduleService,
         completionService: CompletionService,
         streakService: StreakService,
+        notificationService: NotificationService,
+        smartRemindersEnabled: Bool,
         calendar: Calendar = .current
     ) {
+        self.habitService = habitService
         self.scheduleService = scheduleService
         self.completionService = completionService
         self.streakService = streakService
+        self.notificationService = notificationService
+        self.smartRemindersEnabled = smartRemindersEnabled
         self.calendar = calendar
     }
 
@@ -93,6 +102,19 @@ final class TodayViewModel {
             expandedHabitIDs.remove(habitID)
         } else {
             expandedHabitIDs.insert(habitID)
+        }
+    }
+
+    func delete(_ habit: Habit) {
+        habitService.delete(habit)
+        let habits = habitService.fetchAll()
+        Task {
+            await notificationService.rescheduleAll(
+                for: habits,
+                scheduleService: scheduleService,
+                completionService: completionService,
+                smartRemindersEnabled: smartRemindersEnabled
+            )
         }
     }
 

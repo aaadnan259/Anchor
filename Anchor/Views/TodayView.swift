@@ -10,6 +10,7 @@ struct TodayView: View {
     @State private var viewModel: TodayViewModel?
     @State private var isShowingSettings = false
     @State private var loggingTarget: LoggingTarget?
+    @State private var showCompletionCelebration = false
 
     private let today = Date.now
 
@@ -21,22 +22,28 @@ struct TodayView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.lg) {
-                    if let viewModel {
-                        let rows = viewModel.rows(for: habits, on: today)
-                        header(progress: viewModel.overallProgress(for: rows))
+            VStack(spacing: 0) {
+                if let viewModel {
+                    let rows = viewModel.rows(for: habits, on: today)
+                    let progress = viewModel.overallProgress(for: rows)
 
-                        if rows.isEmpty {
-                            emptyState
-                        } else {
-                            habitList(rows: rows, viewModel: viewModel)
+                    header(progress: progress)
+                        .onChange(of: progress) { oldValue, newValue in
+                            if newValue >= 1 && oldValue < 1 {
+                                showCompletionCelebration = true
+                            }
                         }
+
+                    if rows.isEmpty {
+                        emptyState
+                        Spacer()
                     } else {
-                        header(progress: 0)
+                        habitList(rows: rows, viewModel: viewModel)
                     }
+                } else {
+                    header(progress: 0)
+                    Spacer()
                 }
-                .padding(.vertical, Spacing.base)
             }
             .background(Surface.background)
             .navigationBarHidden(true)
@@ -44,6 +51,11 @@ struct TodayView: View {
                 if viewModel == nil {
                     viewModel = makeViewModel()
                 }
+            }
+            .task(id: showCompletionCelebration) {
+                guard showCompletionCelebration else { return }
+                try? await Task.sleep(for: .seconds(1.1))
+                showCompletionCelebration = false
             }
             .onChange(of: settingsService.calculationMethod) { viewModel = makeViewModel() }
             .onChange(of: settingsService.madhab) { viewModel = makeViewModel() }
@@ -74,8 +86,14 @@ struct TodayView: View {
                 progress: progress,
                 tint: settingsService.effectiveAccentColor,
                 size: 56,
-                accessibilityLabelText: "Today's overall progress"
+                accessibilityLabelText: "Today's overall progress",
+                pulseGlow: true
             )
+            .overlay {
+                if showCompletionCelebration {
+                    CompletionCelebrationView(tint: settingsService.effectiveAccentColor)
+                }
+            }
             Button {
                 isShowingSettings = true
             } label: {
@@ -87,73 +105,101 @@ struct TodayView: View {
             .accessibilityLabel("Settings")
         }
         .padding(.horizontal, Spacing.base)
+        .padding(.top, Spacing.base)
+        .padding(.bottom, Spacing.sm)
     }
 
     private func habitList(rows: [TodayViewModel.TodayHabitRow], viewModel: TodayViewModel) -> some View {
-        VStack(spacing: Spacing.md) {
-            SectionHeaderView(title: "Today")
-
-            ForEach(rows) { row in
-                let isExpanded = viewModel.expandedHabitIDs.contains(row.habit.id)
-                let isQuantifiable = !row.isExpandable && row.habit.targetValue != nil
-
-                HabitCardView(
-                    icon: row.habit.icon,
-                    title: row.habit.name,
-                    subtitle: (row.isExpandable && isExpanded) ? nil : row.subtitle,
-                    tint: row.habit.tintColor,
-                    streak: row.streak,
-                    isCompleted: row.isFullyCompleted,
-                    progress: row.isExpandable ? row.progress : (isQuantifiable ? viewModel.quantifiableProgress(for: row, on: today) : nil),
-                    isExpandable: row.isExpandable,
-                    isExpanded: isExpanded,
-                    isQuantifiable: isQuantifiable,
-                    isShielded: viewModel.isShielded(habit: row.habit, on: today),
-                    supportsShields: row.habit.frequency.supportsShields,
-                    onToggleCompletion: {
-                        if let only = row.due.first {
-                            viewModel.toggle(habit: row.habit, occurrence: only.occurrence, on: today)
+        List {
+            Section {
+                ForEach(rows) { row in
+                    habitRow(row: row, viewModel: viewModel)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(rowInsets)
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                viewModel.delete(row.habit)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
-                    },
-                    onTapExpand: {
-                        viewModel.toggleExpanded(row.habit.id)
-                    },
-                    onTapLogValue: {
-                        if let occurrence = row.due.first?.occurrence {
-                            loggingTarget = LoggingTarget(habit: row.habit, occurrence: occurrence)
-                        }
-                    },
-                    onToggleShield: {
-                        viewModel.toggleShield(habit: row.habit, on: today)
-                    }
-                )
-
-                if row.isExpandable && isExpanded {
-                    VStack(spacing: 0) {
-                        ForEach(row.due, id: \.occurrence.id) { due in
-                            OccurrenceRowView(
-                                title: due.occurrence.title,
-                                timeLabel: due.time?.formatted(date: .omitted, time: .shortened),
-                                isCompleted: viewModel.isCompleted(occurrence: due.occurrence, on: today),
-                                tint: row.habit.tintColor,
-                                onToggleCompletion: {
-                                    viewModel.toggle(habit: row.habit, occurrence: due.occurrence, on: today)
-                                }
-                            )
-                        }
-                    }
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
-                            .fill(Surface.card.opacity(0.6))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
-                            .stroke(Surface.border, lineWidth: 1)
-                    )
                 }
+            } header: {
+                SectionHeaderView(title: "Today")
+                    .listRowInsets(EdgeInsets())
             }
         }
-        .padding(.horizontal, Spacing.base)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+    }
+
+    private var rowInsets: EdgeInsets {
+        EdgeInsets(top: Spacing.xs, leading: Spacing.base, bottom: Spacing.xs, trailing: Spacing.base)
+    }
+
+    @ViewBuilder
+    private func habitRow(row: TodayViewModel.TodayHabitRow, viewModel: TodayViewModel) -> some View {
+        let isExpanded = viewModel.expandedHabitIDs.contains(row.habit.id)
+        let isQuantifiable = !row.isExpandable && row.habit.targetValue != nil
+
+        VStack(spacing: Spacing.sm) {
+            HabitCardView(
+                icon: row.habit.icon,
+                title: row.habit.name,
+                subtitle: (row.isExpandable && isExpanded) ? nil : row.subtitle,
+                tint: row.habit.tintColor,
+                streak: row.streak,
+                isCompleted: row.isFullyCompleted,
+                progress: row.isExpandable ? row.progress : (isQuantifiable ? viewModel.quantifiableProgress(for: row, on: today) : nil),
+                isExpandable: row.isExpandable,
+                isExpanded: isExpanded,
+                isQuantifiable: isQuantifiable,
+                isShielded: viewModel.isShielded(habit: row.habit, on: today),
+                supportsShields: row.habit.frequency.supportsShields,
+                onToggleCompletion: {
+                    if let only = row.due.first {
+                        viewModel.toggle(habit: row.habit, occurrence: only.occurrence, on: today)
+                    }
+                },
+                onTapExpand: {
+                    viewModel.toggleExpanded(row.habit.id)
+                },
+                onTapLogValue: {
+                    if let occurrence = row.due.first?.occurrence {
+                        loggingTarget = LoggingTarget(habit: row.habit, occurrence: occurrence)
+                    }
+                },
+                onToggleShield: {
+                    viewModel.toggleShield(habit: row.habit, on: today)
+                }
+            )
+
+            if row.isExpandable && isExpanded {
+                VStack(spacing: 0) {
+                    ForEach(row.due, id: \.occurrence.id) { due in
+                        OccurrenceRowView(
+                            title: due.occurrence.title,
+                            timeLabel: due.time?.formatted(date: .omitted, time: .shortened),
+                            isCompleted: viewModel.isCompleted(occurrence: due.occurrence, on: today),
+                            tint: row.habit.tintColor,
+                            onToggleCompletion: {
+                                viewModel.toggle(habit: row.habit, occurrence: due.occurrence, on: today)
+                            }
+                        )
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
+                        .fill(Surface.card.opacity(0.6))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
+                        .stroke(Surface.border, lineWidth: 1)
+                )
+            }
+        }
+        .padding(.vertical, Spacing.xs)
     }
 
     private var emptyState: some View {
@@ -173,9 +219,12 @@ struct TodayView: View {
         let scheduleService = ScheduleService(prayerService: prayerService, locationService: locationService)
         let streakService = StreakService(completionService: completionService)
         return TodayViewModel(
+            habitService: HabitService(context: modelContext),
             scheduleService: scheduleService,
             completionService: completionService,
-            streakService: streakService
+            streakService: streakService,
+            notificationService: NotificationService(),
+            smartRemindersEnabled: settingsService.smartRemindersEnabled
         )
     }
 }

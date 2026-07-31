@@ -21,6 +21,41 @@ struct HabitCardView: View {
     var onToggleShield: (() -> Void)? = nil
 
     var body: some View {
+        Button(action: handlePrimaryTap) {
+            cardContent
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .contextMenu {
+            if supportsShields {
+                Button {
+                    onToggleShield?()
+                } label: {
+                    Label(
+                        isShielded ? "Remove Shield" : "Shield Today",
+                        systemImage: isShielded ? "shield.slash" : "shield.fill"
+                    )
+                }
+            }
+        }
+    }
+
+    private func handlePrimaryTap() {
+        if isExpandable {
+            withAnimation(reduceMotion ? .linear(duration: 0.1) : Motion.snappy) {
+                onTapExpand?()
+            }
+        } else if isQuantifiable {
+            onTapLogValue?()
+        } else {
+            Haptics.light()
+            withAnimation(reduceMotion ? .linear(duration: 0.1) : Motion.bouncy) {
+                onToggleCompletion()
+            }
+        }
+    }
+
+    private var cardContent: some View {
         HStack(alignment: .top, spacing: Spacing.md) {
             ZStack {
                 RoundedRectangle(cornerRadius: CornerRadius.small, style: .continuous)
@@ -133,19 +168,7 @@ struct HabitCardView: View {
             .fill(tint)
             .frame(height: 3)
         }
-        .accessibilityElement(children: .combine)
-        .contextMenu {
-            if supportsShields {
-                Button {
-                    onToggleShield?()
-                } label: {
-                    Label(
-                        isShielded ? "Remove Shield" : "Shield Today",
-                        systemImage: isShielded ? "shield.slash" : "shield.fill"
-                    )
-                }
-            }
-        }
+        .contentShape(Rectangle())
     }
 }
 

@@ -33,11 +33,6 @@ struct HabitsView: View {
                     }
                     .accessibilityLabel("Add Habit")
                 }
-                if !activeHabits.isEmpty {
-                    ToolbarItem(placement: .topBarLeading) {
-                        EditButton()
-                    }
-                }
             }
             .task {
                 if viewModel == nil {
