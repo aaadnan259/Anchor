@@ -55,7 +55,7 @@ First **launch** on any device fails with `"...its profile has not been explicit
 xcodebuild test -project Anchor.xcodeproj -scheme Anchor -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
 ```
 
-Look for `Test run with N tests passed` at the end. As of the last update to this file, N = 47. See `TESTING.md` for what's covered and what isn't, and why.
+Look for `Test run with N tests passed` at the end. As of the last update to this file, N = 51. See `TESTING.md` for what's covered and what isn't, and why.
 
 **Pipe-safety note:** if you pipe `xcodebuild`'s output through `| tail -N`, the shell's exit code reflects `tail`, not `xcodebuild` — it will read as success even if the build failed. Either check for the literal `** BUILD SUCCEEDED **`/`** TEST SUCCEEDED **` string in the output, or redirect to a file and check `$?` immediately after the `xcodebuild` command itself, not after a pipe.
 
