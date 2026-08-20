@@ -19,13 +19,13 @@ Verified 2026-08-20 at `26bd240`:
 - `xcodebuild build` — `** BUILD SUCCEEDED **`, zero compiler warnings.
 - `xcodebuild test` — `** TEST SUCCEEDED **`, **54/54 tests passing**.
 
-This is a snapshot, not live CI. Re-run before trusting it.
+Still valid at the current HEAD: the two commits since are documentation-only, with zero diff to `Anchor/`, `AnchorTests/`, or `project.yml`. This is a snapshot, not live CI — re-run before trusting it.
 
 ## Repository State
 
-- Branch `main`, in sync with `origin/main`. Working tree clean apart from the in-flight documentation refactor.
-- HEAD: `26bd240` — "Add 'By Day of Week' radial chart to Habit Insights."
-- Several merged PR branches (`docs/*`, `feature/*`) still exist locally and on the remote; they're spent and safe to delete.
+- Branch `main`, clean working tree, in sync with `origin/main` (pushed 2026-08-20).
+- HEAD: `ba4bd58` — the documentation context-architecture refactor.
+- `main` is the only branch, local and remote. All spent PR branches have been deleted.
 
 ## Recently Verified
 
@@ -34,7 +34,7 @@ This is a snapshot, not live CI. Re-run before trusting it.
 
 ## Current Work
 
-None in progress. The documentation architecture was refactored on 2026-08-20 for progressive context loading; no application code was touched.
+None in progress. The documentation architecture was refactored on 2026-08-20 for progressive context loading (`cb1a964`, `ba4bd58`) — committed, merged, and pushed. No application code was touched.
 
 ## Open Blockers
 
