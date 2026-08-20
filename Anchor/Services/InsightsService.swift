@@ -54,6 +54,14 @@ struct TimeOfDaySlice: Identifiable {
     let count: Int
 }
 
+struct WeekdaySlice: Identifiable {
+    let id = UUID()
+    let weekday: Weekday
+    let dueCount: Int
+    let completedCount: Int
+    var rate: Double { dueCount == 0 ? 0 : Double(completedCount) / Double(dueCount) }
+}
+
 @MainActor
 struct InsightsService {
     let completionService: CompletionService
@@ -79,6 +87,34 @@ struct InsightsService {
             counts[period, default: 0] += 1
         }
         return TimeOfDayPeriod.allCases.map { TimeOfDaySlice(period: $0, count: counts[$0] ?? 0) }
+    }
+
+    /// Completion rate per weekday across the habit's whole history — which days of the week it
+    /// tends to get done vs. missed. Reuses `DueDateRule.isDue`/`CompletionService.isFullyCompleted`,
+    /// the same choke points `dailyRate` below uses, just bucketed by weekday instead of by date range.
+    func weekdayDistribution(for habit: Habit, referenceDate: Date = .now) -> [WeekdaySlice] {
+        let today = calendar.startOfDay(for: referenceDate)
+        let habitStart = calendar.startOfDay(for: habit.createdAt)
+
+        var dueCounts: [Weekday: Int] = [:]
+        var completedCounts: [Weekday: Int] = [:]
+
+        var day = habitStart
+        while day <= today {
+            if DueDateRule.isDue(frequency: habit.frequency, on: day, calendar: calendar) {
+                let weekday = Weekday.from(date: day, calendar: calendar)
+                dueCounts[weekday, default: 0] += 1
+                if completionService.isFullyCompleted(habit: habit, on: day) {
+                    completedCounts[weekday, default: 0] += 1
+                }
+            }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+            day = next
+        }
+
+        return Weekday.allCases.map { weekday in
+            WeekdaySlice(weekday: weekday, dueCount: dueCounts[weekday] ?? 0, completedCount: completedCounts[weekday] ?? 0)
+        }
     }
 
     private func weeklyTrend(for habit: Habit, referenceDate: Date) -> [TrendPoint] {

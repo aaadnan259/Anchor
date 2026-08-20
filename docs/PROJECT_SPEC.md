@@ -163,6 +163,7 @@ Preset cards:
 Pushed from a Stats card (tap).
 - Trend chart (line): completion rate over Week (last 12 weeks), Month (last 12 months), or Year (last 5 years) — segmented picker
 - Time-of-day pattern: completions bucketed into Night/Morning/Afternoon/Evening, with a "usually completed in the ___" summary
+- By Day of Week: a radial wheel chart, one wedge per weekday, wedge length encoding that weekday's completion rate across the habit's whole history, with a "Best on ___" summary — the app's third and only genuinely radial chart, distinct from the trend line and time-of-day bars
 - History: the same completion grid shown on Stats, plus (Daily/Weekdays habits only) a "Manage Shielded Days" sheet — mark a day as exempt via a date picker so it doesn't break a streak, for vacation/illness, past or future. Shielded days render as a distinct color in the grid and don't count toward or break current/best streak. Not available for weekly-target habits. The same shield/unshield toggle is also available faster, for today specifically, via long-press on the habit's Today card.
 - "View Full Calendar" — pushes a dedicated Calendar History screen: a month-grid calendar (day numbers, not dots) of the same per-day completion states as the heatmap, with prev/next month navigation clamped between the habit's creation month and the current month.
 
@@ -305,6 +306,5 @@ Do not implement roadmap items in v1.
 Raised after the v1 visual redesign discussion. Not yet assigned to a version — prioritize deliberately, one at a time, rather than building speculatively.
 
 - **Cross-habit correlation insights** — e.g. does completing habit A predict completing habit B
-- **Additional chart types** — radial completion charts (line trends and dot-matrix heatmap already shipped in v1)
 
-Note: pausing a habit without losing its history already exists in v1 (Archive/Unarchive).
+Note: pausing a habit without losing its history already exists in v1 (Archive/Unarchive). ~~Additional chart types~~ shipped — see the Habit Insights "By Day of Week" radial wheel chart above.

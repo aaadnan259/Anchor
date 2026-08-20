@@ -2,7 +2,7 @@
 
 Prioritized backlog. This is the actionable, living companion to `PROJECT_SPEC.md`'s "Future Roadmap" and "Backlog" sections — those describe *what*, this describes *what to do about it and in what order*.
 
-There is currently nothing Critical, High, Medium, or Low priority open.
+One Medium item open (a verification task, not a known app defect) — see below. Nothing Critical, High, or Low.
 
 ---
 
@@ -15,6 +15,11 @@ None.
 None.
 
 ## Medium
+
+### Verify the "By Day of Week" radial chart end-to-end
+- **Why it's here:** `Anchor/Components/WeekdayRadialChartView.swift` (new, Swift Charts `SectorMark`) builds cleanly and has full `InsightsServiceTests` coverage on the data side, but hasn't been visually confirmed in the simulator or on a physical device yet — a `simctl install`/`launch` attempt timed out mid-boot and the session was interrupted before it could be retried.
+- **Complexity:** Low (no code change expected unless the chart visually misbehaves — e.g. a 0%-rate wedge's floored-to-8% sliver looking wrong, or light/dark mode contrast issues).
+- **Dependencies:** A working simulator session (retry with a fresh boot) or a physical device. If `HabitsView`'s "+" button gap (`KNOWN_ISSUES.md` R7) recurs and blocks habit creation, that's the known, already-logged issue, not a new one to re-diagnose.
 
 ~~Verify Calendar History (and the previous session's Today-screen interactions) end-to-end~~ — **done 2026-07-31, confirmed directly by the user.** Calendar History's month-grid view, the Today screen's full-card tap-to-complete, swipe-to-delete, and the 100%-completion celebration all work as expected, no bugs found. The simulator-automation gap that blocked automated verification (`HabitsView`'s "+" button not responding to synthetic taps) remains undiagnosed but is no longer a blocker for these features. See `KNOWN_ISSUES.md` R7.
 
@@ -61,6 +66,8 @@ Nothing currently flagged. `ARCHITECTURE.md`'s performance targets (60fps, sub-1
 Nothing currently flagged outstanding. VoiceOver labels, Dynamic Type, 44pt touch targets, and Reduce Motion fallbacks have been part of the Definition of Done for every feature shipped — see `TESTING.md` for the manual verification checklist.
 
 ## Testing
+
+~~Add `InsightsServiceTests` cases for `weekdayDistribution`~~ — **done 2026-07-31**, alongside the "By Day of Week" chart itself. See `weekdayDistributionComputesCounts`, `weekdayDistributionExcludesNonDueWeekdaysForWeekdaysHabit`, `weekdayDistributionAllDaysDueForWeeklyTargetHabit` in `InsightsServiceTests.swift`.
 
 ~~Add `StreakServiceTests` cases for the heatmap display-richness gap~~ — **done 2026-07-30**, alongside the fix itself. See `dailyHistoryQuantifiablePartialToCompleted` and `dailyHistoryQuantifiableNothingLoggedIsMissed` in `StreakServiceTests.swift`.
 

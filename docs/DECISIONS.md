@@ -4,6 +4,25 @@ Architectural Decision Record. One entry per non-obvious choice — not every li
 
 ---
 
+## ADR-018: "Additional chart types" interpreted as a weekday completion wheel, not a bigger single-ring visualization
+
+**Date:** 2026-07-31 (session date; implemented in a later real-world session)
+
+**Problem:** The backlog item ("radial completion charts") was never more than a placeholder phrase — no concrete design existed. Something had to be proposed before anything could be built.
+
+**Options considered:**
+1. A "By Day of Week" radial wheel: seven equal-angle wedges (one per weekday), wedge length encoding that weekday's historical completion rate — a genuinely novel insight ("which days are you best/worst at this habit") not covered by the existing trend (over time) or time-of-day (within a day) charts.
+2. A single large radial ring showing one aggregate lifetime completion percentage — visually simple, but redundant with `ProgressRingView`'s existing role and not really a "chart" (no distribution to show).
+3. A radial version of the existing time-of-day distribution (recasting `TimeOfDayChartView`'s four bars as four pie wedges) — radial in form, but not a new *insight*, just a re-skin of data already shown.
+
+**Decision:** Option 1, proposed to the user with the concrete design (Swift Charts `SectorMark`, equal angles, rate-encoded radius, placement in `HabitInsightsView`) and confirmed before implementation.
+
+**Reasoning:** The backlog's actual goal was a third, differentiated way to look at completion data, not merely "make something round." Option 1 is the only one of the three that's both authentically radial (angular position is meaningful, not just decorative) and adds information the other two charts don't already surface. It also maps directly onto data already available (`DueDateRule.isDue`/`CompletionService.isFullyCompleted`) with no new persistence or model changes.
+
+**Tradeoffs:** `SectorMark`'s `outerRadius` parameter has no `PlottableValue`-bound overload in this SDK — each wedge's radius is computed manually per-mark (`.ratio(max(slice.rate, 0.08))`) inside the `Chart(slices) { }` closure rather than declared once via a chart-wide value mapping. Functionally identical, just less "declarative" than a typical Swift Charts mark. A 0%-rate weekday is floored to an 8% radius sliver so it stays visible/tappable rather than fully collapsing to the inner radius.
+
+---
+
 ## ADR-017: WidgetKit (v1.2) dropped for this session rather than risking free-account provisioning
 
 **Date:** 2026-07-31

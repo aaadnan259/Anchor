@@ -16,6 +16,7 @@ struct HabitInsightsView: View {
                     let hasAnyCompletions = viewModel.timeOfDaySlices(for: habit).contains { $0.count > 0 }
                     trendSection(viewModel: viewModel, hasAnyCompletions: hasAnyCompletions)
                     timeOfDaySection(viewModel: viewModel, hasAnyCompletions: hasAnyCompletions)
+                    weekdaySection(viewModel: viewModel, hasAnyCompletions: hasAnyCompletions)
                     historySection(viewModel: viewModel)
                 }
             }
@@ -120,6 +121,35 @@ struct HabitInsightsView: View {
                         description: Text("Complete this habit to see when you usually do it.")
                     )
                     .frame(height: 140)
+                }
+            }
+            .padding(Spacing.base)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
+                    .fill(Surface.card)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.card, style: .continuous)
+                    .stroke(Surface.border, lineWidth: 1)
+            )
+            .padding(.horizontal, Spacing.base)
+        }
+    }
+
+    private func weekdaySection(viewModel: HabitInsightsViewModel, hasAnyCompletions: Bool) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            SectionHeaderView(title: "By Day of Week")
+
+            Group {
+                if hasAnyCompletions {
+                    WeekdayRadialChartView(slices: viewModel.weekdaySlices(for: habit), tint: habit.tintColor)
+                } else {
+                    ContentUnavailableView(
+                        "No Completions Yet",
+                        systemImage: "chart.pie",
+                        description: Text("Complete this habit a few times to see which days you're strongest.")
+                    )
+                    .frame(height: 180)
                 }
             }
             .padding(Spacing.base)

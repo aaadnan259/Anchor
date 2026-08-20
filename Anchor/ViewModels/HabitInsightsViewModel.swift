@@ -23,6 +23,10 @@ final class HabitInsightsViewModel {
         insightsService.timeOfDayDistribution(for: habit)
     }
 
+    func weekdaySlices(for habit: Habit) -> [WeekdaySlice] {
+        insightsService.weekdayDistribution(for: habit)
+    }
+
     func dailyHistory(for habit: Habit) -> [DayCompletionState] {
         streakService.dailyHistory(for: habit)
     }

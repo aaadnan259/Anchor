@@ -148,4 +148,72 @@ struct InsightsServiceTests {
         #expect(slices.count == 4)
         #expect(slices.allSatisfy { $0.count == 0 })
     }
+
+    @Test("weekday distribution computes per-weekday due/completed counts across a habit's history")
+    func weekdayDistributionComputesCounts() throws {
+        let start = try date(2026, 7, 13) // Monday
+        let referenceDate = try date(2026, 7, 22) // Wednesday, 10 days later
+        let (habit, occurrence) = makeDailyHabit(createdAt: start)
+        let insightsService = try makeInsightsService()
+
+        complete(occurrence, habit: habit, on: try date(2026, 7, 13)) // Mon (1/2)
+        complete(occurrence, habit: habit, on: try date(2026, 7, 20)) // Mon (2/2)
+        complete(occurrence, habit: habit, on: try date(2026, 7, 14)) // Tue (1/2)
+        complete(occurrence, habit: habit, on: try date(2026, 7, 16)) // Thu (1/1)
+
+        let slices = insightsService.weekdayDistribution(for: habit, referenceDate: referenceDate)
+
+        let monday = try #require(slices.first { $0.weekday == .monday })
+        let tuesday = try #require(slices.first { $0.weekday == .tuesday })
+        let wednesday = try #require(slices.first { $0.weekday == .wednesday })
+        let thursday = try #require(slices.first { $0.weekday == .thursday })
+        let friday = try #require(slices.first { $0.weekday == .friday })
+
+        #expect(monday.dueCount == 2 && monday.completedCount == 2)
+        #expect(tuesday.dueCount == 2 && tuesday.completedCount == 1)
+        #expect(abs(tuesday.rate - 0.5) < 0.0001)
+        #expect(wednesday.dueCount == 2 && wednesday.completedCount == 0)
+        #expect(thursday.dueCount == 1 && thursday.completedCount == 1)
+        #expect(friday.dueCount == 1 && friday.completedCount == 0)
+    }
+
+    @Test("weekday distribution reports zero due count for non-due weekdays on a Weekdays-only habit")
+    func weekdayDistributionExcludesNonDueWeekdaysForWeekdaysHabit() throws {
+        let friday = try date(2026, 7, 17)
+        let referenceDate = try date(2026, 7, 20) // the following Monday
+        let habit = Habit(
+            name: "Work", icon: "briefcase.fill", accentColor: .sky,
+            frequency: .weekdays([.monday, .tuesday, .wednesday, .thursday, .friday]),
+            createdAt: friday, displayOrder: 0
+        )
+        let occurrence = Occurrence(title: "Work", displayOrder: 0, scheduleProvider: .unscheduled)
+        habit.occurrences = [occurrence]
+        let insightsService = try makeInsightsService()
+
+        let slices = insightsService.weekdayDistribution(for: habit, referenceDate: referenceDate)
+        let saturday = try #require(slices.first { $0.weekday == .saturday })
+        let sunday = try #require(slices.first { $0.weekday == .sunday })
+
+        #expect(saturday.dueCount == 0)
+        #expect(saturday.rate == 0)
+        #expect(sunday.dueCount == 0)
+    }
+
+    @Test("weekday distribution treats every day as due for a weekly-target habit")
+    func weekdayDistributionAllDaysDueForWeeklyTargetHabit() throws {
+        let start = try date(2026, 7, 13) // Monday
+        let referenceDate = try date(2026, 7, 19) // Sunday, one full week later
+        let habit = Habit(
+            name: "Gym", icon: "dumbbell.fill", accentColor: .coral,
+            frequency: .timesPerWeek(target: 3),
+            createdAt: start, displayOrder: 0
+        )
+        let occurrence = Occurrence(title: "Gym", displayOrder: 0, scheduleProvider: .unscheduled)
+        habit.occurrences = [occurrence]
+        let insightsService = try makeInsightsService()
+
+        let slices = insightsService.weekdayDistribution(for: habit, referenceDate: referenceDate)
+
+        #expect(slices.allSatisfy { $0.dueCount == 1 })
+    }
 }

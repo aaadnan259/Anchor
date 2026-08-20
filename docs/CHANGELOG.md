@@ -4,6 +4,20 @@ Grouped by milestone (matching real commits on `main`), not by conversation. New
 
 ---
 
+## Unreleased — "By Day of Week" radial chart (backlog)
+
+**Type:** New feature, closes the backlog's "Additional chart types" item (`PROJECT_SPEC.md`).
+
+- **New `InsightsService.weekdayDistribution(for:referenceDate:)`** — computes a completion rate per weekday across a habit's whole history, reusing `DueDateRule.isDue`/`CompletionService.isFullyCompleted` (the same choke points `dailyRate` already uses), bucketed by weekday instead of by date range. New `WeekdaySlice` struct (`dueCount`/`completedCount`/computed `rate`).
+- **New `Anchor/Components/WeekdayRadialChartView.swift`** — the app's first genuinely radial chart (the existing trend and time-of-day charts are both Cartesian). Built on Swift Charts' native `SectorMark`: seven equal-angle wedges, one per weekday, each wedge's `outerRadius` set directly from that weekday's completion rate (`.ratio(max(slice.rate, 0.08))`) rather than via a data-bound `PlottableValue` — `SectorMark`'s `outerRadius` parameter doesn't have a `PlottableValue`-accepting overload in this SDK, caught immediately by a build error and fixed by computing the ratio directly per-mark instead. "Best on ___" headline mirroring `TimeOfDayChartView`'s pattern.
+- **New "By Day of Week" section in `HabitInsightsView`**, between Time of Day and History, reusing the same `hasAnyCompletions` gate and `ContentUnavailableView` empty-state pattern as the other two chart sections.
+- `HabitInsightsViewModel` gained one thin pass-through: `weekdaySlices(for:)`.
+- New `InsightsServiceTests` cases: per-weekday due/completed counting across a mixed history, a Weekdays-only habit correctly reporting zero due count (not just zero completions) on its non-due weekdays, and a weekly-target habit correctly treating every day as due (`DueDateRule.isDue` returns `true` unconditionally for `.timesPerWeek`).
+
+**Verification:** `xcodebuild build` — zero warnings. `xcodebuild test` — 54/54 passing (51 existing + 3 new). No `project.yml` changes.
+
+---
+
 ## Unreleased — Calendar History (v1.1)
 
 **Type:** New feature, shipped from `PROJECT_SPEC.md`'s Future Roadmap. WidgetKit (v1.2), requested alongside it, was explicitly dropped for this session — see `DECISIONS.md` ADR-017.
