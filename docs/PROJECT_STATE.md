@@ -29,6 +29,7 @@ Still valid at the current HEAD: the two commits since are documentation-only, w
 
 ## Recently Verified
 
+- **"By Day of Week" radial chart** — visually verified in the simulator (2026-08-20), light and dark. Habit creation via the UI was skipped (see `KNOWN_ISSUES.md` R8 — the "+" button's known unreliability in this environment); instead a temporary, launch-argument-gated seed path was added to `AnchorApp.init`, used to populate a 21-day, all-weekdays completion history via SwiftData directly, then fully reverted (`git checkout`) before the final build. Confirmed: a 0%-rate weekday's floored 8% sliver renders as a small but clearly visible full-opacity wedge — not broken, invisible, or overlapping — and contrast holds in both light and dark. No bugs found; no code change needed.
 - **Calendar History and the Today-screen interaction/motion polish** — full-card tap-to-complete, swipe-to-delete, and the 100%-completion celebration — confirmed working end-to-end by the user on a real device (2026-07-31). No bugs found.
 - **Emoji habit-icon entry and the custom `ColorPicker`** — confirmed working on a physical device (2026-07-30), closing out what had looked like two app bugs but were simulator-tooling limitations.
 
@@ -54,8 +55,8 @@ Full list with reasoning: `CLAUDE_CONTEXT.md`'s "Deliberately Not Built."
 
 ## Open Issues
 
-`KNOWN_ISSUES.md` Open section: none. `TODO.md`: one open Medium item — visual verification of the "By Day of Week" radial chart, which has full data-side unit coverage but hasn't been seen rendered yet.
+`KNOWN_ISSUES.md` Open section: none. `TODO.md`: none — the last open item (visual verification of the "By Day of Week" radial chart) closed out 2026-08-20.
 
 ## Next Recommended Step
 
-Visually verify the "By Day of Week" radial chart in Habit Insights (between Time of Day and History), light and dark mode — checking that a 0%-rate weekday's floored 8% sliver reads sensibly. Then wait for the next user request.
+None queued. Wait for the next user request.

@@ -2,23 +2,13 @@
 
 Work that remains. Shipped work lives in `CHANGELOG.md`; product scope in `PROJECT_SPEC.md`; defects in `KNOWN_ISSUES.md`. Nothing here is historical — if it's listed, it's still to be done.
 
-**Currently open: one Medium verification task. Nothing Critical, High, or Low.**
+**Currently open: nothing. Nothing Critical, High, Medium, or Low.**
 
 ---
 
-## Critical / High / Low
+## Critical / High / Medium / Low
 
 None.
-
-## Medium
-
-### Verify the "By Day of Week" radial chart end-to-end
-`Anchor/Components/WeekdayRadialChartView.swift` builds cleanly and its data side has full `InsightsServiceTests` coverage, but it has never been seen rendered. A `simctl install`/`launch` attempt timed out mid-boot and the session ended before a retry.
-
-- **Where:** Habit Insights, between Time of Day and History.
-- **What to check:** that a 0%-rate weekday's floored 8% sliver reads sensibly rather than looking broken, and light/dark contrast.
-- **Complexity:** Low — no code change expected unless it visually misbehaves.
-- **Needs:** a working simulator session (retry with a fresh boot) or a physical device. If `HabitsView`'s "+" button won't respond and blocks habit creation, that's the known environment gap (`KNOWN_ISSUES.md` R8), not a new problem.
 
 ---
 
