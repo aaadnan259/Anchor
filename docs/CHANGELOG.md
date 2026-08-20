@@ -6,7 +6,7 @@ What shipped, newest first, grouped by real commits on `main`. Hashes are real �
 
 ---
 
-## Uncommitted — Documentation context architecture refactor (2026-08-20)
+## `cb1a964` — Documentation context architecture refactor (2026-08-20)
 
 Documentation only; no application code, `project.yml`, or build configuration touched.
 
