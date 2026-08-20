@@ -13,17 +13,26 @@ xcodegen generate
 xcodebuild build -project Anchor.xcodeproj -scheme Anchor -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
 ```
 
-`Anchor.xcodeproj` is generated from `project.yml` and is gitignored — never edit it directly. See `docs/DEVELOPMENT_GUIDE.md` for full build/run/test instructions.
+`Anchor.xcodeproj` is generated from `project.yml` and is gitignored — never edit it directly. Full build, run, test, and device instructions: [`docs/DEVELOPMENT_GUIDE.md`](docs/DEVELOPMENT_GUIDE.md).
 
 ## Documentation
 
-Start with **[`CLAUDE.md`](CLAUDE.md)** — the engineering constitution and a map of everything else in [`docs/`](docs/):
+**Start with [`CLAUDE.md`](CLAUDE.md)** — the engineering constitution, and the map of when to read everything else.
 
-- [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) — what the app does
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — how it's built
-- [`docs/CLAUDE_CONTEXT.md`](docs/CLAUDE_CONTEXT.md) — full project history and reasoning
-- [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — where things stand right now
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — why things are built the way they are
-- [`docs/TODO.md`](docs/TODO.md) · [`docs/CHANGELOG.md`](docs/CHANGELOG.md) · [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) · [`docs/TESTING.md`](docs/TESTING.md) · [`docs/DEVELOPMENT_GUIDE.md`](docs/DEVELOPMENT_GUIDE.md)
+Each document has one purpose:
 
-If you're an AI assistant picking up this project in a new conversation, read `CLAUDE.md` first — it tells you what else to read before writing any code.
+| File | Answers |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | How to work on this project |
+| [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) | Where the project is right now |
+| [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) | What the product should do |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | How the software is structured |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Why important choices were made |
+| [`docs/DEVELOPMENT_GUIDE.md`](docs/DEVELOPMENT_GUIDE.md) | How to build, run, and deploy it |
+| [`docs/TESTING.md`](docs/TESTING.md) | How to verify it |
+| [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | What happened historically |
+| [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) | What is currently broken |
+| [`docs/TODO.md`](docs/TODO.md) | What remains to be done |
+| [`docs/CLAUDE_CONTEXT.md`](docs/CLAUDE_CONTEXT.md) | Deep background, when you need it |
+
+**If you're an AI assistant picking this up:** read `CLAUDE.md` and `docs/PROJECT_STATE.md` — those two only. `CLAUDE.md` tells you which of the rest your task actually needs. Don't load the whole corpus.

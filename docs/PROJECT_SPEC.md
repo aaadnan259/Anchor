@@ -1,310 +1,101 @@
-# PROJECT_SPEC.md
+# PROJECT_SPEC.md — Product Specification
 
-# Anchor — Product Specification (v1)
+What Anchor **should do**. How it's built belongs in `ARCHITECTURE.md`; why, in `DECISIONS.md`; what's currently true, in `PROJECT_STATE.md`.
+
+Everything under "Shipped Behavior" is current v1 + v1.1 functionality. Everything under "Roadmap" and "Backlog" is **not** a requirement and must not be implemented ahead of schedule.
+
+---
 
 ## Vision
-Anchor is a focused, beautifully designed habit tracker for iPhone. It is intentionally **not** a task manager, planner, calendar, or productivity suite. The primary experience is helping users complete today's habits with minimal friction.
 
-## Product Principles
-- Fast to open.
-- Fast to understand.
-- Fast to complete.
-- Native iOS experience.
-- Privacy first.
-- Local-first architecture.
-- Feature depth over feature breadth.
+A focused, beautifully designed habit tracker for iPhone. Intentionally **not** a task manager, planner, calendar, or productivity suite. The primary experience is helping users complete today's habits with minimal friction.
 
-## Goals
-### Included in v1
-- Daily checklist
-- Habit streaks
-- Local notifications
-- Flexible scheduling
-- Beautiful SwiftUI interface
-- SwiftData persistence
-- Presets (Prayer, Gym, Work, Custom)
+**Principles:** fast to open · fast to understand · fast to complete · native iOS · privacy first · local-first · feature depth over breadth.
 
-### Explicitly Out of Scope
-- Accounts
-- Cloud sync
-- Widgets
-- Apple Watch
-- HealthKit
-- Siri
-- AI features
-- Collaboration
-- Calendar view
-- Themes (curated accent color + an exact custom color override are in scope; arbitrary app-wide visual themes are not)
+## Scope
 
-Note: this list reflects original v1 planning. Two items originally listed here — data export/import and charts beyond simple progress — were later scoped in and shipped (CSV/JSON export; the Habit Insights trend and time-of-day charts). See both features' entries under Screens below and `CHANGELOG.md`.
+**In scope (v1):** daily checklist · habit streaks · local notifications · flexible scheduling (including prayer-time) · SwiftUI interface · SwiftData persistence · presets (Prayer, Gym, Work, Custom). Data export and the Habit Insights charts were scoped in after original planning and have shipped.
 
-## Technology
-- SwiftUI
-- SwiftData
-- iOS 17+
-- XcodeGen
-- Adhan Swift (wrapped behind abstraction)
+**Explicitly out of scope:** accounts · cloud sync · HealthKit · Siri · AI features · collaboration · arbitrary app-wide visual themes (a curated accent palette plus one exact custom-color override *is* in scope; themes beyond that are not). Widgets, Apple Watch, and iCloud sync are out of scope for v1 specifically and appear on the roadmap below.
 
-## Architecture
+---
 
-### Pattern
-MVVM with dependency injection.
-
-Views never contain business logic.
-
-### Data Model
-
-Habit
-- id
-- name
-- icon
-- color
-- frequency
-- reminderEnabled
-- archived
-- createdAt
-- displayOrder
-- targetValue (optional) — numeric daily target for quantifiable habits, nil for binary habits
-- unit (optional) — display label for the target (e.g. "glasses"), nil for binary habits
-- customColorHex (optional) — exact custom tint, overrides the curated `color` when set
-
-Occurrence
-- id
-- habit (relationship, optional)
-- title
-- scheduleProvider
-- displayOrder
-
-Completion
-- id
-- habit (relationship, optional)
-- occurrence (relationship, optional)
-- day
-- completedAt
-- value — logged amount, defaults to 1 for binary habits; compared against the habit's targetValue for quantifiable habits
-
-### Scheduling
-
-Define:
-
-ScheduleProvider (protocol)
-
-Implementations:
-- FixedTimeScheduleProvider
-- PrayerScheduleProvider
-- WeeklyScheduleProvider
-
-Views consume schedules only. They never know how schedules are generated.
-
-## Services
-
-- HabitService
-- ScheduleService
-- NotificationService
-- LocationService
-- StreakService
-
-Services are stateless where practical and injected into consumers.
-
-## Screens
+## Shipped Behavior
 
 ### Onboarding
-Shown once, before Today/Habits/Stats, gated by `hasCompletedOnboarding`.
-- Welcome
-- Choose starter habits (Prayer/Gym/Work presets, multi-select, all preselected — can proceed with none)
-- Notification priming, shown only if a selected habit wants reminders — explains why before the system prompt fires
-- Location priming, shown only if a selected habit uses prayer scheduling — explains it's used only for prayer-time calculation, never stored or shared
-- Completing creates the chosen habits and hands off to Today
+Shown once, gated by `hasCompletedOnboarding`, before Today/Habits/Stats.
+- Welcome → choose starter habits (Prayer/Gym/Work presets, multi-select, all preselected; proceeding with none is allowed).
+- Notification priming, shown only if a chosen habit wants reminders — explains why before the system prompt fires.
+- Location priming, shown only if a chosen habit uses prayer scheduling — explains it's used only for prayer-time calculation, never stored or shared.
+- Completing creates the chosen habits and hands off to Today.
 
 ### Today
-- Date
-- Daily progress ring, with a soft pulsing glow and a brief celebration animation the moment it reaches 100%
-- Due habits
-- Expandable occurrences
-- One-tap completion — tapping anywhere on a habit card performs its primary action (toggle for binary habits, open the log-value sheet for quantifiable habits, expand/collapse for multi-occurrence habits), not just its small dedicated control
-- Quantifiable habits show a fill ring instead of a checkmark; tapping opens a stepper sheet to log today's value
-- Swipe left on a habit card to delete the habit
-- Long-press a habit card (Daily/Weekdays habits only) for a "Shield Today" quick action — a blue shield badge shows once active
-- Smooth animations
-- Haptics
+- Date, and a daily progress ring with a soft pulsing glow plus a brief celebration the moment it reaches 100%.
+- Due habits, with expandable occurrences for multi-occurrence habits.
+- **Tapping anywhere on a habit card performs its primary action** — toggle for binary habits, open the log-value sheet for quantifiable ones, expand/collapse for multi-occurrence ones — not just its small dedicated control.
+- Quantifiable habits show a fill ring instead of a checkmark; tapping opens a stepper sheet to log today's value.
+- Swipe left on a card to delete the habit.
+- Long-press a card (Daily/Weekdays habits only) for a "Shield Today" quick action; a blue shield badge shows once active.
+- Smooth animations and haptics.
 
 ### Habits
-- Reorder
-- Archive
-- Delete
-- Duplicate
-- Edit
-- Add
+Reorder (long-press drag), archive, delete, duplicate, edit, add.
 
-### Add/Edit
-Fields:
-- Name
-- Icon — a curated SF Symbol grid, or a single Apple emoji entered via a text field and the system emoji keyboard
-- Color — 8 curated swatches, or an exact custom color via a native color picker
-- Frequency
-- Occurrences
-- Track a Number (Custom/single-occurrence habits only) — numeric daily target + unit label, logged via a stepper instead of a binary checkmark
-- Reminder toggle
-
-Preset cards:
-- Prayer
-- Gym
-- Work
-- Custom
+### Add / Edit
+Fields: name · icon (a curated SF Symbol grid, or a single Apple emoji entered via the system emoji keyboard) · color (8 curated swatches, or an exact custom color via a native color picker) · frequency · occurrences · "Track a Number" (Custom/single-occurrence habits only — a numeric daily target plus a unit label, logged via a stepper instead of a checkmark) · reminder toggle. Preset cards: Prayer, Gym, Work, Custom.
 
 ### Stats
-- Current streak
-- Best streak
-- Last 4 weeks completion
-- Completion percentage
-- Tap a habit to open Habit Insights
+Current streak · best streak · last-4-weeks completion · completion percentage. Tap a habit to open Habit Insights.
 
 ### Habit Insights
-Pushed from a Stats card (tap).
-- Trend chart (line): completion rate over Week (last 12 weeks), Month (last 12 months), or Year (last 5 years) — segmented picker
-- Time-of-day pattern: completions bucketed into Night/Morning/Afternoon/Evening, with a "usually completed in the ___" summary
-- By Day of Week: a radial wheel chart, one wedge per weekday, wedge length encoding that weekday's completion rate across the habit's whole history, with a "Best on ___" summary — the app's third and only genuinely radial chart, distinct from the trend line and time-of-day bars
-- History: the same completion grid shown on Stats, plus (Daily/Weekdays habits only) a "Manage Shielded Days" sheet — mark a day as exempt via a date picker so it doesn't break a streak, for vacation/illness, past or future. Shielded days render as a distinct color in the grid and don't count toward or break current/best streak. Not available for weekly-target habits. The same shield/unshield toggle is also available faster, for today specifically, via long-press on the habit's Today card.
-- "View Full Calendar" — pushes a dedicated Calendar History screen: a month-grid calendar (day numbers, not dots) of the same per-day completion states as the heatmap, with prev/next month navigation clamped between the habit's creation month and the current month.
+Pushed from a Stats card.
+- **Trend chart** (line): completion rate over Week (last 12 weeks), Month (last 12 months), or Year (last 5 years), via a segmented picker.
+- **Time of Day:** completions bucketed into Night/Morning/Afternoon/Evening, with a "usually completed in the ___" summary.
+- **By Day of Week:** a radial wheel, one wedge per weekday, wedge length encoding that weekday's completion rate across the habit's whole history, with a "Best on ___" summary. The app's only genuinely radial chart.
+- **History:** the same completion grid shown on Stats, plus — for Daily/Weekdays habits only — a "Manage Shielded Days" sheet. A shielded day is exempt from breaking a streak (vacation, illness), past or future; it renders in a distinct color and neither counts toward nor breaks current/best streak. Not available for weekly-target habits. The same toggle is reachable faster, for today specifically, via long-press on the Today card.
+- **"View Full Calendar"** pushes a dedicated Calendar History screen: a month grid (day numbers, not dots) of the same per-day completion states as the heatmap, with month navigation clamped between the habit's creation month and the current month.
 
 ### Settings
-Reached via gear icon on Today.
-- Prayer calculation method (13 methods, e.g. Muslim World League, ISNA, Umm al-Qura)
-- Prayer Asr calculation (Shafi/Hanafi madhab)
-- Appearance override (System/Light/Dark), applies instantly app-wide including the Settings sheet itself
-- App-wide accent color (8-color palette or an exact custom color, reuses the same picker as per-habit colors), independent of individual habits' own colors
-- Notification authorization status (read-only) with a deep link to system settings when denied
-- Smart Reminders (opt-in): one evening check-in notification (fixed 8:00 PM) per habit still due and incomplete as of the last reschedule, independent of any per-habit reminder
-- App Lock (Face ID/Touch ID, with device-passcode fallback), toggle only shown when the device has usable biometry enrolled — re-locks on every background→foreground transition, gated after onboarding
-- Data export as CSV (flat, one row per completion) or JSON (per-habit, nested completions), including archived habits, via the system share sheet
-- App version/build (about)
+Reached via the gear icon on Today.
+- Prayer calculation method (13 methods) and Asr calculation (Shafi/Hanafi madhab).
+- Appearance override (System/Light/Dark), applied instantly app-wide including the Settings sheet itself.
+- App-wide accent color (the 8-color palette or an exact custom color), independent of individual habits' colors.
+- Notification authorization status (read-only), with a deep link to system settings when denied.
+- Smart Reminders (opt-in): one evening check-in at 8:00 PM per habit still due and incomplete as of the last reschedule, independent of per-habit reminders.
+- App Lock (Face ID/Touch ID with device-passcode fallback) — the toggle appears only when the device has usable biometry enrolled. Re-locks on every background→foreground transition.
+- Data export as CSV (flat, one row per completion) or JSON (per-habit, nested), including archived habits, via the system share sheet.
+- App version and build.
 
-Persisted via UserDefaults (SettingsService), not SwiftData — these are scalar app-wide preferences, not relational business data.
+### Notifications
+Recalculated on app launch, foreground, midnight, location change, habit edit, and notification-permission change. Only the next seven days are kept scheduled.
 
-## Design System
+---
 
-Typography:
-- SF Pro
-- Dynamic Type
+## Cross-Cutting Requirements
 
-Spacing:
-4 / 8 / 12 / 16 / 24 / 32 / 48
+**Design:** SF Pro with full Dynamic Type · spacing scale 4/8/12/16/24/32/48 · corner radius 12 for controls, 20 for cards · spring animations · haptics only where meaningful · semantic colors with full light/dark support.
 
-Corners:
-12 small
-20 cards
+**Accessibility:** VoiceOver labels, 44pt minimum controls, Dynamic Type, Reduce Motion compatibility, high contrast — on every screen.
 
-Animations:
-- Spring
-- Haptics only where meaningful
+**Performance:** cold launch under one second where practical · no expensive work in `View.body` · lazy stacks for large collections · cached daily schedules · no unnecessary SwiftData fetches.
 
-Colors:
-- Semantic colors
-- Curated accent palette, or an exact custom color per habit and app-wide
-- Full Light/Dark support
+**Quality bar:** see `../CLAUDE.md`'s Definition of Done. Functionally, v1 requires create/edit/archive/delete habit, complete habit and occurrence, verified persistence, verified prayer scheduling, and verified notifications.
 
-## Accessibility
-- VoiceOver labels
-- 44pt minimum controls
-- Dynamic Type
-- Reduce Motion compatibility
-- High contrast
+---
 
-## Notifications
+## Roadmap — not requirements
 
-Recalculate when:
-- app launch
-- foreground
-- midnight
-- location changes
-- habit edits
-- notification permission changes
+Do not implement these ahead of schedule.
 
-Maintain next seven days only.
+- **v1.1 — Calendar history.** ✅ Shipped; see Habit Insights' "View Full Calendar" above.
+- **v1.2 — Widgets.** Deferred, and paused at the user's explicit request — see ADR-017 for the rationale and the standing instruction.
+- **v1.3 — iCloud Sync.** Out of scope for v1 by deliberate product promise (no accounts, no cloud).
+- **v1.4 — Apple Watch.**
 
-## Performance Targets
+## Backlog — captured, unscoped
 
-- Cold launch under one second where practical.
-- No expensive work in View.body.
-- Lazy stacks for large collections.
-- Cache today's calculated schedules.
-- No unnecessary SwiftData fetches.
+Prioritize deliberately, one at a time; don't build speculatively.
 
-## Folder Structure
+- **Cross-habit correlation insights** — e.g. does completing habit A predict completing habit B. Deferred pending real usage data.
 
-App/
-Models/
-Views/
-Components/
-Services/
-Theme/
-Utilities/
-Extensions/
-Assets/
-Resources/
-Preview Content/
-Tests/
-
-## Milestones
-
-1. Scaffold project
-2. Design system
-3. Models
-4. Persistence
-5. Services
-6. Today screen
-7. Habit management
-8. Notifications
-9. Stats
-10. Accessibility
-11. Polish
-12. Final QA
-
-Every milestone must compile before continuing.
-
-## Acceptance Criteria
-
-Functional
-- Create habit
-- Edit habit
-- Archive habit
-- Delete habit
-- Complete habit
-- Complete occurrence
-- Persistence verified
-- Prayer schedule verified
-- Notifications verified
-
-Quality
-- Zero compiler warnings
-- Zero runtime crashes during QA
-- Dark mode
-- Light mode
-- Dynamic Type
-- VoiceOver labels
-- Consistent spacing
-- Reusable components
-- No duplicated business logic
-
-## Future Roadmap
-
-~~v1.1 — Calendar history~~ — shipped. See the Habit Insights screen's "View Full Calendar."
-
-v1.2
-- Widgets — deferred pending a paid Apple Developer account. Sharing data with a widget extension needs an App Group, which requires explicit App ID registration in Apple's developer portal — unreliable on the free "Personal Team" signing this project currently uses, and risky to the existing physical-device builds. See `DECISIONS.md`.
-
-v1.3
-- iCloud Sync
-
-v1.4
-- Apple Watch
-
-Do not implement roadmap items in v1.
-
-### Backlog (captured, unscoped)
-
-Raised after the v1 visual redesign discussion. Not yet assigned to a version — prioritize deliberately, one at a time, rather than building speculatively.
-
-- **Cross-habit correlation insights** — e.g. does completing habit A predict completing habit B
-
-Note: pausing a habit without losing its history already exists in v1 (Archive/Unarchive). ~~Additional chart types~~ shipped — see the Habit Insights "By Day of Week" radial wheel chart above.
+Two former backlog items are closed: *additional chart types* shipped as the "By Day of Week" radial wheel, and *pausing a habit without losing history* already exists in v1 as Archive/Unarchive.

@@ -1,75 +1,56 @@
-# TODO.md
+# TODO.md — Actionable Backlog
 
-Prioritized backlog. This is the actionable, living companion to `PROJECT_SPEC.md`'s "Future Roadmap" and "Backlog" sections — those describe *what*, this describes *what to do about it and in what order*.
+Work that remains. Shipped work lives in `CHANGELOG.md`; product scope in `PROJECT_SPEC.md`; defects in `KNOWN_ISSUES.md`. Nothing here is historical — if it's listed, it's still to be done.
 
-One Medium item open (a verification task, not a known app defect) — see below. Nothing Critical, High, or Low.
+**Currently open: one Medium verification task. Nothing Critical, High, or Low.**
 
 ---
 
-## Critical
-
-None.
-
-## High
+## Critical / High / Low
 
 None.
 
 ## Medium
 
 ### Verify the "By Day of Week" radial chart end-to-end
-- **Why it's here:** `Anchor/Components/WeekdayRadialChartView.swift` (new, Swift Charts `SectorMark`) builds cleanly and has full `InsightsServiceTests` coverage on the data side, but hasn't been visually confirmed in the simulator or on a physical device yet — a `simctl install`/`launch` attempt timed out mid-boot and the session was interrupted before it could be retried.
-- **Complexity:** Low (no code change expected unless the chart visually misbehaves — e.g. a 0%-rate wedge's floored-to-8% sliver looking wrong, or light/dark mode contrast issues).
-- **Dependencies:** A working simulator session (retry with a fresh boot) or a physical device. If `HabitsView`'s "+" button gap (`KNOWN_ISSUES.md` R7) recurs and blocks habit creation, that's the known, already-logged issue, not a new one to re-diagnose.
+`Anchor/Components/WeekdayRadialChartView.swift` builds cleanly and its data side has full `InsightsServiceTests` coverage, but it has never been seen rendered. A `simctl install`/`launch` attempt timed out mid-boot and the session ended before a retry.
 
-~~Verify Calendar History (and the previous session's Today-screen interactions) end-to-end~~ — **done 2026-07-31, confirmed directly by the user.** Calendar History's month-grid view, the Today screen's full-card tap-to-complete, swipe-to-delete, and the 100%-completion celebration all work as expected, no bugs found. The simulator-automation gap that blocked automated verification (`HabitsView`'s "+" button not responding to synthetic taps) remains undiagnosed but is no longer a blocker for these features. See `KNOWN_ISSUES.md` R7.
+- **Where:** Habit Insights, between Time of Day and History.
+- **What to check:** that a 0%-rate weekday's floored 8% sliver reads sensibly rather than looking broken, and light/dark contrast.
+- **Complexity:** Low — no code change expected unless it visually misbehaves.
+- **Needs:** a working simulator session (retry with a fresh boot) or a physical device. If `HabitsView`'s "+" button won't respond and blocks habit creation, that's the known environment gap (`KNOWN_ISSUES.md` R8), not a new problem.
 
-~~Verify emoji entry / custom ColorPicker end-to-end~~ — **done 2026-07-30, on a physical device.** Both work as expected: a real emoji typed via the system keyboard saves and renders correctly wherever a habit's icon is drawn; the 9th "Custom" swatch opens the native iOS color picker and an exact color applies correctly. No crashes or unexpected behavior. See `KNOWN_ISSUES.md` R6.
+---
 
-~~Re-check `ManageShieldsView` and the new Today quick-action stay in sync~~ — **done 2026-07-30.** Verified in a live simulator session: shielding today via the Today card's long-press quick-action correctly shows up in `ManageShieldsView`'s calendar and vice versa. See `KNOWN_ISSUES.md` R4.
+## Future Ideas — do not implement ahead of schedule
 
-## Low
+From `PROJECT_SPEC.md`'s roadmap. Listed for awareness, not as work to pick up.
 
-~~Heatmap display richness for shielded + below-target quantifiable days~~ — **done 2026-07-30.** `StreakService.dailyHistory` now reports `.partial` (reusing the existing state/color, not a new one) for a due, unshielded, single-occurrence day with a logged value greater than zero but below target — distinguishing "attempted but short" from "did nothing." A shielded quantifiable day already correctly reported `.shielded` regardless of logged value (that part was never actually a gap — a shielded day is a shielded day irrespective of value). See `DECISIONS.md` ADR-015.
-
-~~Unit label validation in Add/Edit~~ — **done 2026-07-30.** `AddEditHabitViewModel.unitLabel` now clamps to 24 characters via a `didSet`, preventing an absurdly long value. Emoji-blocking was considered and deliberately skipped — it would reject legitimate non-ASCII unit labels (accented characters, other scripts) for no real benefit, since a long value was the actual "something absurd" concern, not the character set.
-
-## Future Ideas (from `PROJECT_SPEC.md`'s roadmap — do not implement ahead of schedule)
-
-- ~~v1.1 — Calendar history.~~ **Shipped 2026-07-31.** See `Anchor/Views/CalendarHistoryView.swift`, `CHANGELOG.md`.
-- **v1.2 — Widgets.** Needs a new WidgetKit extension target sharing data via an App Group — deferred pending a paid Apple Developer account (free "Personal Team" signing makes App Group provisioning unreliable and risks the existing physical-device build pipeline). See `DECISIONS.md` ADR-017. Paused at the user's explicit request as of 2026-07-31 — do not raise this again until they say they're ready.
-- **v1.3 — iCloud Sync.** Explicitly out of scope for v1 (no accounts, no cloud is a deliberate v1 promise per `PROJECT_SPEC.md`).
+- **v1.2 — Widgets.** Deferred pending a paid Apple Developer account, and paused at the user's request. See ADR-017.
+- **v1.3 — iCloud Sync.** Out of scope for v1 by deliberate product promise.
 - **v1.4 — Apple Watch.**
+- **Cross-habit correlation insights.** Deferred pending real usage data — statistically meaningless on sparse early history, so this is blocked on data, not effort.
+
+## Already Decided — do not re-litigate
+
+Listed so a future session doesn't reopen a settled question without knowing it was settled.
+
+- **A curated emoji picker grid** instead of the system emoji keyboard — considered and rejected (ADR-011).
+- **Per-occurrence shielding** — considered twice, declined twice (ADR-009, ADR-013).
+- **Shields for weekly-target habits** — surfaced to the user, who chose to leave the scoping as-is (ADR-009).
 
 ## Technical Debt
 
-### `Frequency.supportsShields` had zero call sites for one full feature cycle
-- **Status:** resolved as of Quick Shields (`82e82bb`) — it's now wired into `HabitCardView`'s context-menu gate. Listed here only as a historical note: it's worth grepping for other properties/methods that look similarly unused before assuming something is dead code vs. "planned for a feature that hasn't landed yet."
+**No dedicated test suite for `CompletionService`, `NotificationService`, `LocationService`, or `AuthenticationService`.** This is the deliberate testing boundary, not a gap to close reflexively — three wrap live system frameworks that aren't practical to unit-test without mocking infrastructure this project doesn't have, and `CompletionService` is thin dispatch exercised indirectly through `StreakServiceTests`/`InsightsServiceTests`. See `TESTING.md`. Add tests here only if genuinely non-trivial logic accumulates.
 
-### No dedicated test suite for `CompletionService`, `NotificationService`, `LocationService`, or `AuthenticationService`
-- **Why it's this way, not a gap to close reflexively:** established, deliberate testing boundary (see `TESTING.md`) — these either wrap live system frameworks not practical to unit-test without mocking infrastructure this project doesn't have (`LocationService`, `NotificationService`, `AuthenticationService`), or are thin CRUD/pass-through glue exercised indirectly through the services that depend on them (`CompletionService`, exercised via `StreakServiceTests`/`InsightsServiceTests`). Don't add tests here reflexively — only if genuinely non-trivial logic accumulates in one of these files.
+## Refactoring · Performance · Accessibility
 
-## Refactoring
+Nothing flagged in any of the three.
 
-Nothing currently flagged. The architecture has absorbed 10+ feature additions without needing a rewrite (per `ARCHITECTURE.md`'s "Future Extensibility" section) — no signs of that changing.
-
-## UX Improvements
-
-### Curate emoji picker as an alternative to the free-text field (rejected once, revisit only if requested)
-- **Why it's here:** considered and explicitly rejected in favor of the system emoji keyboard (`DECISIONS.md` ADR-011). Not a task to pick up proactively — listed only so a future session doesn't re-litigate it without knowing it was already decided.
-
-## Performance
-
-Nothing currently flagged. `ARCHITECTURE.md`'s performance targets (60fps, sub-1s cold launch, no expensive work in `View.body`) have held through every feature added; no profiling has surfaced a regression.
-
-## Accessibility
-
-Nothing currently flagged outstanding. VoiceOver labels, Dynamic Type, 44pt touch targets, and Reduce Motion fallbacks have been part of the Definition of Done for every feature shipped — see `TESTING.md` for the manual verification checklist.
+- The architecture has absorbed ten-plus feature additions without needing a rewrite.
+- Performance targets (60fps, sub-1s cold launch, no expensive work in `View.body`) have held; no profiling has surfaced a regression.
+- VoiceOver labels, Dynamic Type, 44pt targets, and Reduce Motion fallbacks are part of the Definition of Done for every feature shipped.
 
 ## Testing
 
-~~Add `InsightsServiceTests` cases for `weekdayDistribution`~~ — **done 2026-07-31**, alongside the "By Day of Week" chart itself. See `weekdayDistributionComputesCounts`, `weekdayDistributionExcludesNonDueWeekdaysForWeekdaysHabit`, `weekdayDistributionAllDaysDueForWeeklyTargetHabit` in `InsightsServiceTests.swift`.
-
-~~Add `StreakServiceTests` cases for the heatmap display-richness gap~~ — **done 2026-07-30**, alongside the fix itself. See `dailyHistoryQuantifiablePartialToCompleted` and `dailyHistoryQuantifiableNothingLoggedIsMissed` in `StreakServiceTests.swift`.
-
-### Consider one `CompletionServiceTests.swift` if `CompletionService` ever grows non-trivial logic beyond threshold comparison
-- Currently it's exercised only indirectly. Revisit if it grows.
+One candidate, not urgent: a `CompletionServiceTests.swift`, *if* `CompletionService` ever grows logic beyond threshold comparison and dispatch. Currently exercised only indirectly.

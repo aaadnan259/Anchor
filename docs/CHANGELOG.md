@@ -1,208 +1,153 @@
-# CHANGELOG.md
+# CHANGELOG.md — Historical Record
 
-Grouped by milestone (matching real commits on `main`), not by conversation. Newest first. Commit hashes are real and can be looked up with `git show <hash>`.
+What shipped, newest first, grouped by real commits on `main`. Hashes are real — look one up with `git show <hash>`.
 
----
-
-## Unreleased — "By Day of Week" radial chart (backlog)
-
-**Type:** New feature, closes the backlog's "Additional chart types" item (`PROJECT_SPEC.md`).
-
-- **New `InsightsService.weekdayDistribution(for:referenceDate:)`** — computes a completion rate per weekday across a habit's whole history, reusing `DueDateRule.isDue`/`CompletionService.isFullyCompleted` (the same choke points `dailyRate` already uses), bucketed by weekday instead of by date range. New `WeekdaySlice` struct (`dueCount`/`completedCount`/computed `rate`).
-- **New `Anchor/Components/WeekdayRadialChartView.swift`** — the app's first genuinely radial chart (the existing trend and time-of-day charts are both Cartesian). Built on Swift Charts' native `SectorMark`: seven equal-angle wedges, one per weekday, each wedge's `outerRadius` set directly from that weekday's completion rate (`.ratio(max(slice.rate, 0.08))`) rather than via a data-bound `PlottableValue` — `SectorMark`'s `outerRadius` parameter doesn't have a `PlottableValue`-accepting overload in this SDK, caught immediately by a build error and fixed by computing the ratio directly per-mark instead. "Best on ___" headline mirroring `TimeOfDayChartView`'s pattern.
-- **New "By Day of Week" section in `HabitInsightsView`**, between Time of Day and History, reusing the same `hasAnyCompletions` gate and `ContentUnavailableView` empty-state pattern as the other two chart sections.
-- `HabitInsightsViewModel` gained one thin pass-through: `weekdaySlices(for:)`.
-- New `InsightsServiceTests` cases: per-weekday due/completed counting across a mixed history, a Weekdays-only habit correctly reporting zero due count (not just zero completions) on its non-due weekdays, and a weekly-target habit correctly treating every day as due (`DueDateRule.isDue` returns `true` unconditionally for `.timesPerWeek`).
-
-**Verification:** `xcodebuild build` — zero warnings. `xcodebuild test` — 54/54 passing (51 existing + 3 new). No `project.yml` changes.
+**This is history, not current state.** For what's true now see `PROJECT_STATE.md`; for what's planned, `TODO.md`; for why a choice was made, `DECISIONS.md`.
 
 ---
 
-## Unreleased — Calendar History (v1.1)
+## Uncommitted — Documentation context architecture refactor (2026-08-20)
 
-**Type:** New feature, shipped from `PROJECT_SPEC.md`'s Future Roadmap. WidgetKit (v1.2), requested alongside it, was explicitly dropped for this session — see `DECISIONS.md` ADR-017.
+Documentation only; no application code, `project.yml`, or build configuration touched.
 
-- **`StreakService.dailyHistory`'s per-day branch extracted** into a private `dayState(for:on:today:habitStart:)` helper, reused by both the existing `dailyHistory` loop (behavior-preserving — all pre-existing `StreakServiceTests` cases pass unchanged) and a new public `dayCompletionState(for:on:referenceDate:)` single-day lookup, which adds a `day > today` guard so an unlogged future day reports `.notDue` instead of `.missed`. See `DECISIONS.md` ADR-016.
-- **New `Anchor/Components/CalendarHistoryGridView.swift`** — a month-grid calendar (weekday columns, day numbers, `Calendar.current.firstWeekday`-aware) distinct from the existing dot-matrix `HabitHistoryGridView` heatmap. Purely presentational — every cell's color comes from a `stateProvider` closure, never computed locally. Reuses the same `DayCompletionState` → `Color` mapping as the heatmap, now factored out into a shared `DayCompletionState.color(tint:)` extension (`Anchor/Extensions/DayCompletionState+Color.swift`) instead of being duplicated.
-- **New `Anchor/Views/CalendarHistoryView.swift`** — a dedicated screen (not a segmented-control toggle) with month navigation clamped between the habit's creation month and the current month, pushed via a new "View Full Calendar" `NavigationLink` in `HabitInsightsView`'s existing History section, alongside the heatmap and "Manage Shielded Days."
-- `HabitInsightsViewModel` gained one thin pass-through: `dayCompletionState(for:on:)`.
-- New `StreakServiceTests` cases: a cross-check that `dayCompletionState` agrees with `dailyHistory` for every day in a mixed-state range, the future-date `.notDue` fix, pre-creation-date `.notDue`, and confirmation that today-with-nothing-logged reports `.missed` (no inherited streak-continuity leniency).
+Restructured the documentation for **progressive context loading**: a Claude session now reads only `CLAUDE.md` + `PROJECT_STATE.md` at startup (~3.3K tokens, down from ~18.8K) and loads the rest on demand via a decision table in `CLAUDE.md`.
 
-**Verification:** `xcodebuild build` — zero warnings. `xcodebuild test` — 51/51 passing (47 existing + 4 new). No `project.yml` changes — new Swift files only, picked up via `xcodegen generate` (a no-op regeneration of the unchanged config, not a config edit). Simulator-automation verification was blocked by a tooling gap (`KNOWN_ISSUES.md` #5); confirmed working end-to-end by the user directly instead — see `KNOWN_ISSUES.md` R7.
+- **`CLAUDE.md`** gained a startup protocol, a per-task documentation-loading table, a source-of-truth hierarchy with conflict-handling rules, and a documentation update policy. It no longer instructs sessions to read the whole corpus.
+- **`PROJECT_STATE.md`** converted from an accumulating session journal into a current-state snapshot, with an explicit policy against re-accumulating narrative.
+- **`CLAUDE_CONTEXT.md`** reduced ~78%, keeping only what the repository can't tell you — product philosophy, distribution constraints, deliberately-rejected work, and judgment lessons. Repository file maps, file counts, and per-file descriptions removed as discoverable by grep.
+- **`DECISIONS.md`** split: 14 active ADRs stay, each tagged with what it constrains; ADR-004, ADR-005, ADR-008, and ADR-014 moved to the new `docs/archive/DECISIONS_ARCHIVE.md` as historical or superseded. Numbering preserved, no meaning changed.
+- **`PROJECT_SPEC.md`** stripped of duplicated architecture and data-model content, with shipped behavior separated more sharply from roadmap.
+- **`TODO.md`** and **`KNOWN_ISSUES.md`** cleared of struck-through completed work; **`CHANGELOG.md`** entries relabeled from "Unreleased" to their real commit hashes.
 
----
+A follow-up hygiene pass then consolidated the WidgetKit pause to a single authoritative statement in ADR-017 (four documents had restated it in full), removed the duplicated XcodeGen-signing lesson and Personal Team distribution limits, and dropped the hardcoded test count from `DEVELOPMENT_GUIDE.md` so the number lives in one fewer place.
 
-## Unreleased — Today screen interaction and motion polish
+**Accuracy fixes** found by validating docs against the repository: the test count (51 → **54**, verified by a live run), `Shield.habit` documented as a raw `habitID`, and a `ViewModels/` folder missing from both folder-structure lists while non-existent `Resources/` and `Tests/` folders were listed. Also removed a stale claim in ADR-009 that below-target quantifiable days still render as `.missed` — ADR-015 fixed that.
 
-**Type:** UI polish, no new features or model changes.
+## `26bd240` — "By Day of Week" radial chart (2026-08-20)
 
-- **Completion celebration.** New `CompletionCelebrationView` plays a brief checkmark-seal burst + success haptic over the header's progress ring the moment daily progress crosses into 100% (0→1 transition only, not on every render or app reopen). Respects Reduce Motion (shows the checkmark without the motion).
-- **Progress ring glow.** `ProgressRingView` gained an opt-in `pulseGlow` parameter — a soft, blurred duplicate of the filled arc that pulses via `repeatForever`. Enabled only for Today's header ring (the small per-habit/expand/log rings are unaffected). Falls back to a static (non-animated) glow under Reduce Motion.
-- **Full-card tap target.** `HabitCardView`'s whole body is now a `Button` whose action mirrors the card's existing primary control (toggle for binary habits, log-value sheet for quantifiable habits, expand/collapse for multi-occurrence habits). The dedicated inner controls still work exactly as before when tapped directly; the card just no longer requires precision-tapping a small control.
-- **Swipe-to-delete on Today.** `TodayView`'s habit list is now a `List` (previously a plain `ScrollView`/`VStack`, which can't host `.swipeActions`) so a trailing-edge swipe reveals Delete, matching `HabitsView`'s existing pattern. `TodayViewModel` gained a `delete(_:)` method (new `habitService`/`notificationService`/`smartRemindersEnabled` dependencies, mirroring `HabitsViewModel`'s existing delete-then-reschedule shape).
-- **Removed the Habits tab's `EditButton()`.** Reordering already works via long-press-drag without entering edit mode (standard SwiftUI `List`/`onMove` behavior since iOS 16), so the toolbar button was pure redundancy.
-- **Shields for Weekly Goal habits — considered, declined.** The request to make shields available for the Gym preset surfaced a real conflict with ADR-009 (shields are deliberately scoped to Daily/Weekdays habits only; a weekly-goal shield's semantics — free completion vs. reduced target — were never decided). Surfaced to the user via `AskUserQuestion`; they chose to leave the existing scoping as-is. No code change.
+Closes the backlog's "additional chart types" item.
 
-**Verification:** `xcodebuild build` — zero warnings, `** BUILD SUCCEEDED **`. `xcodebuild test` — 47/47 passing. Simulator-automation verification of the full-card tap, swipe-to-delete, and 100%-completion celebration was blocked across two sessions by a tooling gap (`KNOWN_ISSUES.md` #5); confirmed working end-to-end by the user directly instead — see `KNOWN_ISSUES.md` R7. The Edit-button removal and progress ring glow were already confirmed via simulator screenshots at the time.
+- **`InsightsService.weekdayDistribution(for:referenceDate:)`** — completion rate per weekday across a habit's whole history, bucketed by weekday rather than date range, reusing the same `DueDateRule.isDue`/`CompletionService.isFullyCompleted` choke points `dailyRate` already uses. New `WeekdaySlice` (`dueCount`/`completedCount`/computed `rate`).
+- **`WeekdayRadialChartView`** — the app's first genuinely radial chart (trend and time-of-day are both Cartesian). Swift Charts `SectorMark`, seven equal-angle wedges, radius from that weekday's rate. `outerRadius` has no `PlottableValue` overload in this SDK, caught by a build error and fixed by computing `.ratio(...)` per-mark. "Best on ___" headline mirroring `TimeOfDayChartView`.
+- New "By Day of Week" section in `HabitInsightsView` between Time of Day and History, reusing the existing `hasAnyCompletions` gate and `ContentUnavailableView` empty state.
+- `HabitInsightsViewModel.weekdaySlices(for:)` pass-through. Three new `InsightsServiceTests` cases.
 
----
+**Verification:** zero warnings, 54/54 tests. No `project.yml` changes. Visual verification still outstanding — see `TODO.md`. See ADR-018.
 
-## Unreleased — Heatmap richness for below-target quantifiable days
+## `7b2c5b1` — Documentation currency pass (2026-08-08)
 
-**Type:** Small polish fix, no new feature.
+Brought `CLAUDE_CONTEXT.md`, `TESTING.md`, and `DEVELOPMENT_GUIDE.md` current. Documentation only.
 
-- `StreakService.dailyHistory` now reports `.partial` (reusing the existing state and heatmap color) instead of `.missed` for a quantifiable habit logged below target on a due, unshielded day — distinguishing "attempted but short" from "did nothing." See `DECISIONS.md` ADR-015.
-- New `StreakServiceTests` cases: `dailyHistoryQuantifiablePartialToCompleted` (replaces the old `dailyHistoryQuantifiableMissedToCompleted`, updated to expect `.partial`), `dailyHistoryQuantifiableNothingLoggedIsMissed`.
-- Verified visually in the simulator: logging 3 of 8 on a quantifiable habit now renders today's heatmap cell distinctly from an unlogged day.
+## `96d51d5` — Calendar History verification closed out (2026-07-31)
 
----
+The user confirmed on their own device that Calendar History and the Today-screen polish all work correctly. Closed the open verification items in `KNOWN_ISSUES.md` and `TODO.md`. Documentation only; the underlying automation-tool gap was never diagnosed.
 
-## Unreleased — Unit label length cap
+## `89f5507` — Simulator-tooling gap logged (2026-07-31)
 
-**Type:** Small polish fix, no new feature.
+Documented that `HabitsView`'s "+" toolbar button doesn't respond to synthetic taps in this environment — a more specific finding than earlier sessions' general "taps stop working," since every other control worked normally in the same session. Documentation only.
 
-- `AddEditHabitViewModel.unitLabel` now clamps to 24 characters via a `didSet`, closing the "Unit label validation" `TODO.md` item. Emoji-blocking was considered and deliberately skipped (see `TODO.md`).
-- No new tests — thin ViewModel glue, consistent with the established testing boundary (`TESTING.md`).
+## `a1f6146` — Calendar History (v1.1) (2026-07-31)
 
----
+Shipped from the roadmap. WidgetKit (v1.2), requested alongside it, was explicitly dropped — see ADR-017.
 
-## Unreleased — Documentation generation
+- **`StreakService.dailyHistory`'s per-day branch extracted** into a private `dayState` helper, reused by both the existing loop (behavior-preserving) and a new public `dayCompletionState(for:on:referenceDate:)`, which adds a `day > today` guard so an unlogged future day reports `.notDue` rather than `.missed`. See ADR-016.
+- **`CalendarHistoryGridView`** — a month grid (weekday columns, day numbers, `firstWeekday`-aware), distinct from the dot-matrix heatmap. Purely presentational: every cell's color comes from a `stateProvider` closure.
+- **`CalendarHistoryView`** — a dedicated screen (not a segmented toggle) with month navigation clamped between the habit's creation month and the current month, pushed from a "View Full Calendar" link in Habit Insights' History section.
+- **`DayCompletionState.color(tint:)`** extracted into a shared extension so the calendar and the heatmap don't each define their own mapping.
+- Four new `StreakServiceTests` cases, including a cross-check that `dayCompletionState` agrees with `dailyHistory` across a mixed-state range.
 
-**Type:** Documentation only, no application code changed.
+**Verification:** zero warnings, 51/51 tests. No `project.yml` changes. Simulator verification was blocked by a tooling gap; confirmed by the user directly instead (`KNOWN_ISSUES.md` R7).
 
-- Added `docs/` folder; moved `PROJECT_SPEC.md` and `ARCHITECTURE.md` into it.
-- Added `CLAUDE_CONTEXT.md`, `PROJECT_STATE.md`, `DECISIONS.md`, `TODO.md`, `CHANGELOG.md` (this file), `KNOWN_ISSUES.md`, `TESTING.md`, `DEVELOPMENT_GUIDE.md`.
-- Added root `README.md`.
-- Updated `CLAUDE.md` with a documentation map, a "Never Change Without Explicit Approval" section, and an "Always Verify Before Modifying Code" section.
-- Refreshed `ARCHITECTURE.md`'s Data Model, Services, Navigation, and Persistence sections to match the current codebase (they had gone stale relative to the initial-commit version).
+## `40ca2d3` — Today screen interaction and motion polish (2026-07-31)
 
----
+UI polish; no new features or model changes.
 
-## `82e82bb` — Add emoji habit icons, custom accent colors, and quick shields (2026-07-29)
+- **Completion celebration.** `CompletionCelebrationView` plays a brief checkmark burst plus success haptic when daily progress crosses into 100% — the 0→1 transition only, not on every render or reopen. Reduce Motion shows the checkmark without the motion.
+- **Progress ring glow.** `ProgressRingView` gained an opt-in `pulseGlow`, enabled only for Today's header ring; static under Reduce Motion.
+- **Full-card tap target.** `HabitCardView`'s body is now a `Button` mirroring the card's primary control. Inner controls still work when tapped directly; the card just no longer requires precision-tapping.
+- **Swipe-to-delete on Today.** The habit list became a `List` (a `ScrollView`/`VStack` can't host `.swipeActions`), and `TodayViewModel` gained `delete(_:)` mirroring `HabitsViewModel`'s delete-then-reschedule shape.
+- **Removed the Habits tab's `EditButton()`** — long-press-drag reordering has worked without edit mode since iOS 16, so it was pure redundancy.
+- **Shields for Weekly Goal habits — considered, declined.** Surfaced a real conflict with ADR-009; the user chose to leave the scoping as-is. No code change.
 
-**Features:**
-- **Emoji habit icons.** A habit's icon can be a single Apple emoji (via a text field + the system emoji keyboard) as an alternative to the curated SF Symbol grid. New `HabitIconView` component and `String.isSFSymbolCompatible` heuristic pick the right renderer at all six places an icon is drawn.
-- **Custom accent colors.** Both per-habit and app-wide accent colors gained a 9th "Custom" swatch backed by a native `ColorPicker`, stored as an optional hex override (`Habit.customColorHex` / `SettingsService.customAccentColorHex`) that takes priority over the existing curated `AccentColor` enum, which is otherwise untouched.
-- **Quick Shields.** Habit cards on Today gained a long-press "Shield Today" quick action (gated on `Frequency.supportsShields`, previously unwired) plus a shield badge — a faster alternative to Habit Insights' existing Manage Shielded Days sheet.
+**Verification:** zero warnings, 47/47 tests. Interaction verification blocked by the tooling gap; confirmed by the user directly (`KNOWN_ISSUES.md` R7).
 
-**Fixed:**
-- `AccentColorPickerView`'s decorative border/checkmark overlay on the new Custom swatch was silently blocking taps from reaching the native `ColorPicker` beneath it — a default SwiftUI `.overlay()` hit-testing behavior. Fixed with explicit `.allowsHitTesting(false)` on each decorative layer.
+## `5084e28` — Heatmap richness for below-target quantifiable days (2026-07-30)
 
-**Testing:** 4 new cases (`StringIconTests`, `ColorHexTests`) — 46 total, all passing. Zero build warnings.
+`dailyHistory` now reports `.partial` instead of `.missed` for a quantifiable habit logged below target on a due, unshielded day — distinguishing "attempted but short" from "did nothing," reusing the existing state and color. Two new/updated `StreakServiceTests` cases. Verified visually. See ADR-015.
 
----
+## `f0e80b4` — Unit label length cap (2026-07-30)
 
-## `bd2fa6f` — Add quantifiable habit logging (2026-07-24)
+`AddEditHabitViewModel.unitLabel` clamps to 24 characters via a `didSet`. Emoji-blocking was considered and deliberately skipped — it would reject legitimate non-ASCII labels for no benefit, since length was the actual concern. No new tests (thin ViewModel glue).
 
-**Features:**
-- Custom (single-occurrence) habits can track a numeric daily target ("8 glasses of water") instead of a binary checkmark.
-- `Habit.targetValue`/`unit`, `Completion.value` added (both additive — nil/1 defaults keep every existing binary habit unaffected).
-- `CompletionService.isCompleted` became threshold-aware, which propagated correctly through `StreakService`, `InsightsService`, and the notification gate for free, since all three already routed through it.
-- Today shows a fill ring (reusing the existing gradient-animated `ProgressRingView`) for quantifiable habits; tapping opens a new `LogValueView` stepper sheet.
-- Export gained a Value column/field.
+## `940333f` — Physical-device verification (2026-07-30)
 
-**Fixed:**
-- `project.yml` pinned `CODE_SIGN_STYLE`/`DEVELOPMENT_TEAM` permanently (see `DECISIONS.md` ADR-003) — fixed during the physical-device deployment that happened alongside this feature, not part of the feature itself, but landed in the same window.
+Installed on the developer's iPhone to close the last two verification items needing a real device. The user confirmed emoji habit-icon entry and the custom `ColorPicker` both work end-to-end with no crashes — proving both prior "bugs" were simulator-tooling limitations. Documented that `xctrace` and `devicectl` report different identifiers for the same device. See `KNOWN_ISSUES.md` R6.
 
-**Testing:** New `StreakServiceTests`/`ExportServiceTests` cases for quantifiable-habit streak/export behavior.
+## `7857311` — Simulator verification pass (2026-07-30)
 
----
+Verified shield long-press end-to-end (`KNOWN_ISSUES.md` R4). Root-caused the previous session's "taps stopped registering app-wide" symptom: the tool's coordinate space is device **points**, not screenshot pixels. Documented the remaining keyboard/`ColorPicker` tooling limits.
 
-## `5153c15` — Add streak shields (2026-07-24)
+## `d293b88` — Documentation audit against the actual codebase (2026-07-30)
 
-**Features:**
-- New `Shield` SwiftData model (habit-day granularity).
-- `StreakService` gained shield-priority logic: a shielded day bridges a streak without incrementing or breaking it; `dailyHistory` reports `.shielded`, ranked below full-completion but above partial/missed.
-- New `ManageShieldsView` sheet (date picker + list of shielded days), reached from Habit Insights' new History section.
-- `Frequency.supportsShields` added (Daily/Weekdays only — `.timesPerWeek` explicitly excluded).
+A fresh session verified the just-generated docs against real code rather than trusting them, and found several inaccuracies: an inflated test-count claim repeated across three files; off-by-one file counts; `Completion`/`Occurrence` fields documented as raw IDs when they're SwiftData relationships; a missing `HabitService.duplicate`/`updateOccurrence` mention; and a `PROJECT_SPEC.md` self-contradiction listing export and charts as both shipped and out of scope. No application code touched.
 
-**Testing:** New `StreakServiceTests` cases covering shield streak-continuity, non-increment, and `dailyHistory` priority ordering.
+## `d9d77e4` — Documentation knowledge base generated (2026-07-29)
 
----
+Added `docs/`, moved `PROJECT_SPEC.md` and `ARCHITECTURE.md` into it, and created the knowledge-base files. Updated `CLAUDE.md` with a documentation map and the "Never Change Without Explicit Approval" and "Always Verify" sections. Refreshed `ARCHITECTURE.md`'s Data Model, Services, Navigation, and Persistence sections, which had gone stale. See ADR-014 (archived).
+
+## `82e82bb` — Emoji icons, custom accent colors, quick shields (2026-07-29)
+
+- **Emoji habit icons.** A habit's icon can be a single Apple emoji via a text field and the system keyboard. New `HabitIconView` and the `String.isSFSymbolCompatible` heuristic pick the right renderer at all six places an icon is drawn.
+- **Custom accent colors.** Both per-habit and app-wide accents gained a 9th "Custom" swatch backed by a native `ColorPicker`, stored as an optional hex override that takes priority over the curated `AccentColor` — which is otherwise untouched.
+- **Quick Shields.** Long-press "Shield Today" on a Today card, gated on the previously-unwired `Frequency.supportsShields`, plus a shield badge.
+- **Fixed:** `AccentColorPickerView`'s decorative overlay was silently blocking taps to the `ColorPicker` beneath it (`KNOWN_ISSUES.md` R1).
+
+**Testing:** 4 new cases, 46 total. Zero warnings.
+
+## `bd2fa6f` — Quantifiable habit logging (2026-07-24)
+
+Custom (single-occurrence) habits can track a numeric daily target instead of a binary checkmark. `Habit.targetValue`/`unit` and `Completion.value` added, all additive — nil/1 defaults leave every existing binary habit unaffected. `CompletionService.isCompleted` became threshold-aware, which propagated through `StreakService`, `InsightsService`, and the notification gate **for free**, since all three already routed through it. Today shows a fill ring; tapping opens the new `LogValueView` stepper. Export gained a Value column. See ADR-010.
+
+Also in this window: `project.yml` pinned `CODE_SIGN_STYLE`/`DEVELOPMENT_TEAM` permanently during the physical-device deployment happening alongside — see ADR-003.
+
+## `5153c15` — Streak shields (2026-07-24)
+
+New `Shield` SwiftData model at habit-day granularity. `StreakService` gained shield-priority logic: a shielded day bridges a streak without incrementing or breaking it, and `dailyHistory` reports `.shielded`, ranked below full completion but above partial/missed. New `ManageShieldsView` sheet. `Frequency.supportsShields` added (Daily/Weekdays only). See ADR-009.
 
 ## `f762452` — Interaction and visual polish pass (2026-07-23)
 
-**Context:** Triggered by a user-shared third-party "master audit." Every specific claim was fact-checked against the real codebase before acting on it — see `CLAUDE_CONTEXT.md`'s Lessons Learned for what turned out to be accurate, already-done, or hallucinated.
+Triggered by a user-shared third-party "master audit," every claim of which was fact-checked against real code first.
 
-**Features/fixes:**
-- Migrated hand-rolled empty states to native `ContentUnavailableView` across Today/Habits/Stats, and added the two genuinely missing ones to Habit Insights (zero-completion trend/time-of-day states).
-- Added a `.partial` heatmap state (some-but-not-all occurrences done) — previously indistinguishable from `.missed`.
-- Added a thin accent-color top border to `HabitCardView`.
-- Added a Duplicate swipe action to `HabitsView` (`HabitService.duplicate`).
-- Added a subtle gradient to `ProgressRingView`'s stroke.
-- Fixed dim/hard-to-read inactive tab bar icons in dark mode.
+Migrated hand-rolled empty states to `ContentUnavailableView` across Today/Habits/Stats and added the two genuinely missing ones in Habit Insights. Added a `.partial` heatmap state, an accent-color top border on habit cards, a Duplicate swipe action, a gradient on the progress ring stroke, and fixed dim inactive tab-bar icons in dark mode.
 
-**Rejected from the same audit** (not implemented): a hallucinated "Quit Habit Logic" feature, a Habit→subtype architecture split, Widgets, and a cloud backend — see `DECISIONS.md`/`CLAUDE_CONTEXT.md`.
+**Rejected from the same audit:** a hallucinated "Quit Habit Logic" feature, a `Habit` → subtype architecture split, Widgets, and a cloud backend.
 
-**Testing:** New `StreakServiceTests` cases for the `.partial` heatmap state.
+## `b67a83a` — App icon redesign (2026-07-23)
 
----
+A bold single-weight anchor glyph nested in a thin progress ring, rendered at true 1024×1024 via Core Graphics with no alpha channel. Chosen from three candidates.
 
-## `b67a83a` — Redesign app icon (2026-07-23)
+## `bf305cf` — Smart Reminders (2026-07-23)
 
-Bold single-weight anchor glyph nested in a thin progress ring, rendered at true 1024×1024 via Core Graphics, no alpha channel. Chosen from three rendered candidates.
+Opt-in 8:00 PM catch-all notification for any habit still due and incomplete, independent of per-habit reminders. Resolves the "local notifications can't be live" problem via reschedule frequency rather than a Notification Service Extension — see ADR-007. No new tests; reuses already-tested primitives.
 
----
+## `06f39f5` — Biometric app lock (2026-07-23)
 
-## `bf305cf` — Add Smart Reminders (2026-07-23)
+New `AuthenticationService` wrapping `LocalAuthentication`, with `LAContext` never leaked outside that file. New `LockScreenView`; the root branch became 4-way. Re-locks on every background→foreground transition (ADR-006). The Settings toggle appears only when biometry is enrolled. `NSFaceIDUsageDescription` added to `project.yml`.
 
-**Features:**
-- Opt-in evening (8:00 PM) catch-all notification for any habit still due and incomplete, independent of any per-habit reminder.
-- Resolves the "local notifications can't be live" problem via reschedule frequency rather than a new Notification Service Extension target — see `DECISIONS.md` ADR-007.
+## `bc6a50a` — App-wide accent color (2026-07-23)
 
-**Testing:** None new — reuses already-tested primitives (`DueDateRule.isDue`, `CompletionService.isFullyCompleted`); consistent with `NotificationService`'s established untested-wrapper boundary (see `TESTING.md`).
+`SettingsService.accentColor`, reusing the per-habit `AccentColorPickerView` unmodified. Five hardcoded `AccentColor.indigo` call sites swapped over. Fixed a sheet-tint propagation gap where `.tint()` set at a parent didn't reactively update an already-open `.sheet()`. See ADR-008 (archived).
 
----
+## `b27cd0e` — CSV/JSON data export (2026-07-23)
 
-## `06f39f5` — Add biometric app lock (2026-07-23)
+New `ExportService` (CSV flat, JSON nested), reached via two `ShareLink` rows in a new Settings "Data" section. Includes archived habits. `Frequency.displayName` relocated to the Model layer so `ExportService` didn't need a third copy of the logic — see ADR-004 (archived). New `ExportServiceTests`.
 
-**Features:**
-- New `AuthenticationService` wrapping `LocalAuthentication` (`LAContext` never leaked outside this file).
-- New `LockScreenView`; `AnchorApp`'s root branch became 4-way (test / onboarding / lock / main).
-- Re-locks on every background→foreground transition (see `DECISIONS.md` ADR-006), not just cold launch.
-- Settings toggle only shown when the device has usable biometry enrolled.
-- `NSFaceIDUsageDescription` added to `project.yml`.
+## `8aa9ba3` — Onboarding flow with permission priming (2026-07-23)
 
-**Testing:** None new — established boundary for services wrapping live hardware frameworks (see `TESTING.md`). Manual verification only; actual biometric match/no-match couldn't be driven via the simulator's Face ID simulation from this tooling.
+Welcome → choose starter habits → conditional notification priming → conditional location priming, gated by `hasCompletedOnboarding`. Replaced silent starter-habit auto-seeding and the unconditional location request on every cold launch (ADR-005, archived). Fixed a dormant bug as a side effect: the auto-seeded Prayer habit's reminder never actually scheduled, because the old seeding path bypassed the only code path that requests notification permission (`KNOWN_ISSUES.md` R3).
 
----
+## `c8ecfb1` — Initial commit (2026-07-23)
 
-## `bc6a50a` — Add custom accent color picker (2026-07-23)
+The entire v1 scaffold in one commit (76 files, ~5,300 lines): the design system, all core SwiftData models, the full `ScheduleProvider` strategy pattern, all core services, the Today/Habits/Stats/Settings/Add-Edit/Habit-Insights screens, the early Swift Testing suite, and `ARCHITECTURE.md` itself.
 
-**Features:**
-- App-wide accent color setting (`SettingsService.accentColor`), reusing the existing per-habit `AccentColorPickerView` unmodified.
-- Five hardcoded `AccentColor.indigo` call sites swapped to `settingsService.accentColor.color`.
-- Fixed a sheet-tint live-update propagation gap (`.tint()` set at a parent level didn't reactively update an already-open `.sheet()`).
-
-**Testing:** None new — straightforward property addition following an already-tested persistence pattern.
-
----
-
-## `b27cd0e` — Add CSV/JSON data export (2026-07-23)
-
-**Features:**
-- New `ExportService` (CSV flat / JSON nested), reached via two `ShareLink` rows in a new Settings "Data" section.
-- Includes archived habits.
-- `Frequency.displayName` relocated from `HabitsViewModel` to the Model layer (see `DECISIONS.md` ADR-004) so `ExportService` didn't need a third copy of the logic.
-
-**Testing:** New `ExportServiceTests.swift` — CSV escaping/quoting, zero-completion edge case, JSON round-trip, archived-habit inclusion.
-
----
-
-## `8aa9ba3` — Add onboarding flow with permission priming (2026-07-23)
-
-**Features:**
-- New Welcome → choose starter habits (multi-select presets) → conditional notification priming → conditional location priming flow, gated by `hasCompletedOnboarding`.
-- Replaced silent starter-habit auto-seeding (`HabitService.seedStarterHabitsIfNeeded`, deleted) and the unconditional location-permission request on every cold launch — see `DECISIONS.md` ADR-005.
-- Fixed a dormant bug as a side effect: the auto-seeded Prayer habit's `reminderEnabled: true` never resulted in an actually-scheduled notification, because the old seeding path bypassed `AddEditHabitViewModel.save()` (the only path that requests notification permission).
-- New `HabitService.create(from preset:displayOrder:)`, consolidating preset→Habit construction that previously existed in two places.
-
-**Testing:** None new — established ViewModel/UI-glue boundary; manually verified both the full-permission and skip-all-permissions paths.
-
----
-
-## `c8ecfb1` — Initial commit: Anchor habit tracker (2026-07-23)
-
-The entire v1 scaffold, landed as one commit (76 files, ~5300 lines): design system (`Theme/`), all core SwiftData models (`Habit`/`Occurrence`/`Completion`), the full scheduling strategy pattern (`ScheduleProvider` + `FixedTimeProvider`/`PrayerProvider`/`WeeklyProvider`), all core services, Today/Habits/Stats/Settings/Add-Edit/Habit-Insights screens, the early Swift Testing suite (`StreakServiceTests`, `InsightsServiceTests`, `ScheduleProviderTests`, the `DueDateRule` suite), and `ARCHITECTURE.md` (then at root) itself.
-
-This single commit represents substantial prior iterative work — scaffold, design system, models, persistence, services, each screen, an accessibility pass, an earlier polish pass, a full visual redesign, prayer-method configuration (`SettingsService`, 13 calculation methods), and Habit Insights — that predates the git history's granularity. The commit boundary is a snapshot, not a single work session.
+**This commit is a snapshot, not a work session.** It represents substantial prior iterative work — scaffold, design system, models, persistence, services, each screen, an accessibility pass, an earlier polish pass, a full visual redesign, prayer-method configuration, and Habit Insights — that predates the git history's granularity.

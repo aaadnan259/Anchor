@@ -1,81 +1,63 @@
-# KNOWN_ISSUES.md
+# KNOWN_ISSUES.md — Defects & Unverified Areas
 
-Dedicated issue tracker. Distinct from `TODO.md`: this file is about defects and unverified areas; `TODO.md` is about planned work. An item can graduate from here to `TODO.md` once it's understood well enough to be actionable.
+Defects and things not yet verified. Distinct from `TODO.md`, which tracks planned work. An item graduates from here to `TODO.md` once it's understood well enough to be actionable.
 
 ---
 
 ## Open
 
-None. Every item logged here has been verified end-to-end — see the Resolved section below.
+**None.** Every item ever logged here has been fixed or verified end-to-end.
 
-### 5. ~~`HabitsView`'s "+" (Add Habit) toolbar button does not respond to synthetic taps in this tooling~~ — verification blocker resolved via direct user testing, see Resolved section (R7). The underlying automation-tool gap itself (why the button doesn't respond to synthetic taps) was never diagnosed — it just stopped being a blocker once the user tested directly. Could resurface in a future simulator-driven session.
-
-### 1. ~~Emoji entry not verified end-to-end~~ — RESOLVED, see Resolved section (R6)
-
-### 2. ~~Custom `ColorPicker` (`UIColorWell`) open-gesture not verified end-to-end~~ — RESOLVED, see Resolved section (R6)
-
-### 3. ~~Shield long-press context menu not verified end-to-end~~ — RESOLVED, see Resolved section (R4)
-
-### 4. ~~Heatmap doesn't visually distinguish "shielded" from "below-target quantifiable" from "did nothing"~~ — RESOLVED, see Resolved section (R5)
+One unverified area is tracked in `TODO.md` rather than here, because it's a verification task with no suspected defect: the "By Day of Week" radial chart has full data-side unit coverage but hasn't been seen rendered.
 
 ---
 
 ## Resolved
 
-### R1. `AccentColorPickerView`'s decorative overlay blocked taps to the native `ColorPicker`
+### R7 — Calendar History and Today-screen polish · user-confirmed working
+**2026-07-31.** Confirmed by the user directly on a real device, outside the simulator tooling (which was blocked by R8 for this whole round of features): Calendar History's month grid, full-card tap-to-complete, swipe-to-delete, and the 100%-completion celebration. No bugs found.
 
-- **Found and fixed:** 2026-07-29, during Quick Shields/Custom Color verification.
-- **Root cause:** `.overlay(Circle().stroke(...))` and a checkmark/plus `Image` overlay sat on top of the `ColorPicker` in z-order; SwiftUI's default `.overlay()` hit-testing intercepts touches across its full bounds even for a stroke-only (mostly transparent) shape, unless explicitly opted out.
-- **Fix:** `.allowsHitTesting(false)` added to each decorative overlay individually, so touches pass through to the `ColorPicker` beneath.
-- **Files:** `Anchor/Components/AccentColorPickerView.swift`.
+*This closed the verification need, not R8's underlying tooling gap — that remains undiagnosed.*
 
-### R2. `xcodegen generate` silently wiped physical-device signing team
+### R6 — Emoji entry and custom `ColorPicker` · verified on a physical device, no bugs
+**2026-07-30**, on the developer's iPhone (iOS 26.6, `iPhone17,1`), installed via `xcodebuild`/`devicectl` with free Personal Team signing and a one-time profile trust.
 
-- **Found and fixed:** during physical-device deployment (window overlapping the Quantifiable Logging feature, `bd2fa6f`).
-- **Root cause:** `project.yml` never declared a signing team; `xcodegen generate` regenerates the entire `.xcodeproj` on every run and doesn't preserve settings only made through Xcode's GUI.
-- **Fix:** `CODE_SIGN_STYLE: Automatic` and `DEVELOPMENT_TEAM: X264QUS42N` added to `project.yml`'s `settings.base` permanently.
-- **Files:** `project.yml`. Full detail: `DECISIONS.md` ADR-003.
+Both work as designed: the Emoji-mode field accepts a real emoji from the system keyboard, and it renders correctly everywhere an icon is drawn; the 9th "Custom" swatch opens the native color picker and applies an exact color as the accent, overriding the curated `AccentColor`. No crashes.
 
-### R3. Auto-seeded Prayer habit's reminder silently never scheduled
+**These had been logged as two app bugs. Both were simulator-tooling limitations** — no on-screen keyboard renders in that environment, and `UIColorWell` doesn't respond to synthetic taps. Files: `IconPickerView.swift`, `AccentColorPickerView.swift`.
 
-- **Found and fixed:** during the Onboarding feature (`8aa9ba3`).
-- **Root cause:** `HabitService.seedStarterHabitsIfNeeded` (since deleted) called `HabitService.create()` directly, bypassing `AddEditHabitViewModel.save()` — the only code path that actually requests notification authorization and schedules.
-- **Fix:** onboarding routes all first-run habit creation through the same explicit flow real user-created habits use.
-- **Files:** `Anchor/Services/HabitService.swift`, `Anchor/ViewModels/OnboardingViewModel.swift`.
+### R5 — Heatmap didn't distinguish "below-target quantifiable" from "did nothing" · fixed
+**2026-07-30.** `dailyHistory` only reported `.partial` when *some* occurrences of a multi-occurrence habit were done. A single-occurrence quantifiable habit logged below target had `completedCount == 0` (since `isCompleted` is threshold-aware), so it fell into the same branch as an empty day — both `.missed`.
 
-### R4. Shield long-press context menu — verified end-to-end, no bug found
+**Fix:** `dailyHistory` now checks `CompletionService.value` when `completedCount == 0` and reports `.partial` if anything was logged. Reuses the existing case and color — no new `DayCompletionState`. See ADR-015. Verified by unit tests and visually.
 
-- **Verified:** 2026-07-30, in a live simulator session (iPhone 16 Pro, iOS 18.5).
-- **Result:** Long-pressing a Today habit card correctly reveals the "Shield Today" context menu item with a shield glyph; tapping it correctly shows a blue shield badge on the card, correctly shows the shielded day in blue in both the Today card and the Stats/Habit Insights heatmap, and correctly appears as a shielded day (with a working "Remove Shield" toggle) in `ManageShieldsView`'s calendar — confirming the Today quick-action and `ManageShieldsView` read/write the same state and stay in sync.
-- **Files:** `Anchor/Components/HabitCardView.swift`, `Anchor/ViewModels/TodayViewModel.swift`, `Anchor/Views/ManageShieldsView.swift`.
-- **Note:** the earlier non-response (previously logged as open issue #3) was traced to the *previous* session's tap coordinates, not app behavior — this session confirmed the tool's tap coordinate space is in points (402×874 on iPhone 16 Pro), not screenshot pixels; once corrected, taps and long-presses registered reliably throughout the app.
+*A shielded quantifiable day was never part of this gap — `isShielded` is checked before that branch, so it always reported `.shielded` correctly. The original wording bundled the two by association.*
 
-### R5. Heatmap didn't visually distinguish "below-target quantifiable" from "did nothing" — fixed
+### R4 — Shield long-press context menu · verified working, no bug
+**2026-07-30**, in a live simulator session. Long-press → "Shield Today" → blue badge appears; the shielded day shows correctly in the card, the Stats/Insights heatmap, and `ManageShieldsView`'s calendar with a working "Remove Shield" — confirming both entry points read and write the same state.
 
-- **Found and fixed:** 2026-07-30.
-- **Root cause:** `StreakService.dailyHistory` only ever reported `.partial` when some (but not all) occurrences of a multi-occurrence habit were completed. A single-occurrence quantifiable habit logged below its target had `completedCount == 0` (since `isCompleted` is threshold-aware), so it fell into the same branch as a day with nothing logged at all — both rendered `.missed`.
-- **Fix:** `dailyHistory` now checks `CompletionService.value` when `completedCount == 0`; if any occurrence has a logged value greater than zero, it reports `.partial` instead of `.missed`. Reuses the existing `.partial` case and its existing heatmap color — no new `DayCompletionState` case or color was needed. See `DECISIONS.md` ADR-015 for why this was simpler than the alternatives originally anticipated in `TODO.md`.
-- **Verified:** unit tests (`StreakServiceTests.dailyHistoryQuantifiablePartialToCompleted`, `dailyHistoryQuantifiableNothingLoggedIsMissed`) and visually in the simulator — logging 3 of 8 on a quantifiable habit renders today's heatmap cell in the same medium tint as a multi-occurrence partial day, distinctly different from an unlogged day's near-invisible tint.
-- **Files:** `Anchor/Services/StreakService.swift`, `AnchorTests/StreakServiceTests.swift`.
-- **Note:** a shielded quantifiable day was never actually part of this gap — `isShielded` is checked before the `completedCount == 0` branch, so it already correctly reported `.shielded` regardless of logged value. The original `TODO.md`/`KNOWN_ISSUES.md` wording bundled it in by association, not because it was broken.
+*The earlier non-response was the previous session's tap coordinates, not app behavior: the tool's coordinate space is points, not screenshot pixels. See `TESTING.md`.*
 
-### R6. Emoji entry and custom `ColorPicker` — verified end-to-end on a physical device, no bugs found
+### R3 — Auto-seeded Prayer habit's reminder silently never scheduled
+**Fixed during the Onboarding feature (`8aa9ba3`).** `HabitService.seedStarterHabitsIfNeeded` (since deleted) called `create()` directly, bypassing `AddEditHabitViewModel.save()` — the only path that actually requests notification authorization and schedules. Onboarding now routes all first-run creation through the same flow real habits use.
 
-- **Verified:** 2026-07-30, on the developer's own physical iPhone (iOS 26.6, `iPhone17,1`), installed via `xcodebuild`/`xcrun devicectl` (free "Personal Team" signing, one-time manual developer-profile trust via Settings → General → VPN & Device Management).
-- **Emoji entry result:** working as expected. `IconPickerView`'s Emoji mode field accepts a real emoji typed via the system emoji keyboard; the habit saves and the emoji renders correctly wherever the icon is drawn (Today, Habits, Stats). Confirms the simulator-only gap (`KNOWN_ISSUES.md`'s prior #1) was a tooling limitation (no on-screen software keyboard in that streamed environment), not an app defect.
-- **Custom `ColorPicker` result:** working as expected. Tapping the 9th "Custom" swatch opens the native iOS color picker sheet; picking an exact color applies it as the habit's (or app-wide) accent, taking priority over the curated `AccentColor` as designed. Confirms the simulator-only gap (prior #2) was `UIColorWell` not responding to synthetic taps in that environment, not an app defect.
-- **No crashes or unexpected behavior reported for either path.**
-- **Files:** `Anchor/Components/IconPickerView.swift`, `Anchor/Components/AccentColorPickerView.swift`.
+### R2 — `xcodegen generate` silently wiped physical-device signing
+**Fixed during physical-device deployment** (window overlapping `bd2fa6f`). `project.yml` never declared a signing team, and `xcodegen generate` regenerates the whole `.xcodeproj` without preserving Xcode-GUI-only settings. **Fix:** `CODE_SIGN_STYLE` and `DEVELOPMENT_TEAM` now live in `project.yml` permanently. See ADR-003.
 
-### R7. Calendar History and the Today-screen interaction/motion polish — user-confirmed working, no bugs found
+### R1 — `AccentColorPickerView`'s decorative overlay blocked taps to the `ColorPicker`
+**Found and fixed 2026-07-29.** A stroke-only `Circle()` overlay and a checkmark `Image` sat above the `ColorPicker` in z-order; SwiftUI's default `.overlay()` hit-testing intercepts touches across the full bounds even for a mostly-transparent shape. **Fix:** `.allowsHitTesting(false)` on each decorative layer.
 
-- **Verified:** 2026-07-31, directly by the user on a real device/build, outside the simulator-automation tooling (which was blocked by #5's "+" button gap for this entire round of features).
-- **Result:** Confirmed working — Calendar History's month-grid view (via "View Full Calendar" in Habit Insights), the Today screen's full-card tap-to-complete, swipe-to-delete, and the 100%-completion celebration animation. No bugs reported.
-- **Note:** This closes out the verification *need* for these features. It does not diagnose or fix #5's underlying automation-tool gap itself — that remains unexplained and could resurface next time this tooling is used to drive the app.
-- **Files:** `Anchor/Views/CalendarHistoryView.swift`, `Anchor/Components/CalendarHistoryGridView.swift`, `Anchor/Components/HabitCardView.swift`, `Anchor/Views/TodayView.swift`, `Anchor/Components/CompletionCelebrationView.swift`, `Anchor/Components/ProgressRingView.swift`.
+---
+
+## Environment Gaps (not app defects)
+
+### R8 — `HabitsView`'s "+" toolbar button doesn't respond to synthetic taps
+**2026-07-31, never diagnosed, could recur.** In this environment's simulator-automation tooling, that one `ToolbarItem` button never responded across 10+ attempts — plain taps, held `touch_path`, coordinates cross-checked against known-good tab-bar positions, full app restart, and a fresh simulator boot — while every other control tested worked normally.
+
+It blocked habit creation and therefore all UI verification for that round of features; resolved as a *blocker* by the user testing directly (R7), not as a bug. Possibly the same UIKit-bridging category as `UIColorWell` and the missing on-screen keyboard, but unconfirmed. Full tooling-quirk list: `TESTING.md`.
 
 ---
 
 ## Technical Debt
 
-See `TODO.md`'s "Technical Debt" section — nothing currently significant. The one item worth remembering: `Frequency.supportsShields` had zero call sites for one full feature cycle between when it was added (Streak Shields, `5153c15`) and when it was actually wired up (Quick Shields, `82e82bb`). Not a bug, but a reminder to check whether something that looks unused was built ahead of a planned feature before assuming it's dead code.
+Nothing significant. See `TODO.md`. One durable note: `Frequency.supportsShields` had zero call sites for a full feature cycle between Streak Shields and Quick Shields — a reminder to check whether something apparently unused was built ahead of a planned feature before deleting it as dead code.
